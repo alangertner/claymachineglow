@@ -1605,186 +1605,196 @@ function drawTitle(){
   for(let i=0;i<50;i++){const sx=seeded(i)*W,sy=seeded(i+50)*H*0.45;const br=Math.sin(frame*0.04+i*2)*0.5+0.5;if(br>0.3){ctx.fillStyle=`rgba(255,255,255,${br*0.8})`;ctx.fillRect(sx,sy,2,2);}}
   
   // === Dense Toronto skyline (TMNT-style, fills bottom half) ===
-  const skyBase=H*0.58;
+  const skyBase=H*0.55;
   
-  // === TORONTO SKYLINE — Hand-crafted silhouette, Islands night view ===
-  const cnBase=skyBase;
-  const cnX=W*0.32; // CN Tower position
-  const sdCx=W*0.40; // SkyDome center
+  // === TORONTO SKYLINE — From scratch, 16-bit style ===
+  // Traced silhouette approach: one continuous path for the entire skyline shape
+  const B=skyBase; // baseline (waterline)
+  const cnX=W*0.28; // CN Tower x position
+  const sdCx=W*0.37; // SkyDome center
+  
+  // --- SKY GLOW: warm amber haze behind city ---
+  const skyGlow=ctx.createRadialGradient(W*0.5,B,W*0.05,W*0.5,B,W*0.5);
+  skyGlow.addColorStop(0,'rgba(255,180,80,0.06)');skyGlow.addColorStop(0.5,'rgba(255,140,60,0.03)');skyGlow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=skyGlow;ctx.fillRect(0,B-H*0.4,W,H*0.45);
 
-  // Helper: draw building with windows
-  function bldg(x,w,h,color,winColor){
-    const bx=W*x,bw=W*w,bh=H*h,by=cnBase-bh;
-    ctx.fillStyle=color||'#0c0a1a';ctx.fillRect(bx,by,bw,bh);
-    // Windows
-    const wc=winColor||'gold';
-    const winW=Math.max(1.2*s,bw*0.13),winH=Math.max(1.5*s,bh*0.02);
-    for(let wy=3*s;wy<bh-2*s;wy+=winH+2.5*s){
-      for(let wx=1.5*s;wx<bw-1.5*s;wx+=winW+1.5*s){
-        if(seeded(x*200+wy*7+wx*3)>0.35){
+  // --- BACK LAYER: distant buildings silhouette (dark, no windows) ---
+  ctx.fillStyle='#080614';
+  ctx.beginPath();ctx.moveTo(0,B);
+  // Left edge low condos
+  ctx.lineTo(0,B-H*0.03);ctx.lineTo(W*0.04,B-H*0.05);ctx.lineTo(W*0.06,B-H*0.04);
+  ctx.lineTo(W*0.08,B-H*0.07);ctx.lineTo(W*0.10,B-H*0.06);ctx.lineTo(W*0.12,B-H*0.09);
+  ctx.lineTo(W*0.14,B-H*0.08);ctx.lineTo(W*0.16,B-H*0.11);ctx.lineTo(W*0.18,B-H*0.10);
+  ctx.lineTo(W*0.20,B-H*0.13);ctx.lineTo(W*0.22,B-H*0.12);
+  // Gap for CN Tower area
+  ctx.lineTo(W*0.24,B-H*0.08);ctx.lineTo(W*0.26,B-H*0.06);
+  // Right of CN Tower, behind SkyDome
+  ctx.lineTo(W*0.33,B-H*0.06);ctx.lineTo(W*0.44,B-H*0.08);
+  // Behind financial district
+  ctx.lineTo(W*0.46,B-H*0.15);ctx.lineTo(W*0.48,B-H*0.14);
+  ctx.lineTo(W*0.50,B-H*0.18);ctx.lineTo(W*0.52,B-H*0.16);
+  ctx.lineTo(W*0.54,B-H*0.20);ctx.lineTo(W*0.56,B-H*0.18);
+  ctx.lineTo(W*0.58,B-H*0.15);ctx.lineTo(W*0.60,B-H*0.12);
+  // East condos trailing off
+  ctx.lineTo(W*0.65,B-H*0.10);ctx.lineTo(W*0.70,B-H*0.08);
+  ctx.lineTo(W*0.75,B-H*0.06);ctx.lineTo(W*0.80,B-H*0.05);
+  ctx.lineTo(W*0.85,B-H*0.04);ctx.lineTo(W*0.90,B-H*0.03);
+  ctx.lineTo(W*0.95,B-H*0.02);ctx.lineTo(W,B-H*0.01);ctx.lineTo(W,B);
+  ctx.closePath();ctx.fill();
+  
+  // --- FRONT LAYER: main buildings with lit windows ---
+  // Define each building: [x, width, height] as fractions of W and H
+  const bldgs=[
+    // CityPlace condos (west of CN Tower)
+    [0.06,0.022,0.06,'#0e0b20'],[0.085,0.025,0.10,'#100d24'],[0.115,0.020,0.08,'#0e0b20'],
+    [0.14,0.025,0.12,'#100d24'],[0.17,0.022,0.15,'#120f28'],[0.20,0.020,0.11,'#100d24'],
+    [0.225,0.025,0.17,'#120f28'],[0.255,0.020,0.08,'#0e0b20'],
+    // Between CN Tower and SkyDome
+    [0.32,0.022,0.10,'#0e0b20'],
+    // Financial district — RIGHT of SkyDome, THE cluster
+    [0.42,0.020,0.12,'#0e0b20'],  // low
+    [0.445,0.030,0.22,'#0e0b20'], // mid
+    [0.48,0.038,0.38,'#1e1b3a'],  // ★ First Canadian Place (TALLEST building, lighter)
+    [0.525,0.025,0.18,'#100d24'], // slim
+    [0.555,0.035,0.32,'#060408'], // ★ TD Centre (BLACK)
+    [0.595,0.030,0.28,'#080610'], // TD Centre 2
+    [0.63,0.035,0.35,'#1a0c1a'],  // ★ Scotia Plaza (tall, reddish)
+    [0.67,0.030,0.24,'#141230'],  // Commerce Court
+    [0.705,0.028,0.20,'#161434'], // Brookfield
+    [0.74,0.025,0.14,'#100d24'],  // condo east
+    [0.77,0.022,0.10,'#0e0b20'],  // condo east 2
+    [0.80,0.020,0.07,'#0c0918'],  // trailing
+  ];
+  
+  for(const[x,w,h,c]of bldgs){
+    const bx=W*x,bw=W*w,bh=H*h,by=B-bh;
+    ctx.fillStyle=c;ctx.fillRect(bx,by,bw,bh);
+    // Rooftop edge
+    ctx.fillStyle='rgba(255,255,255,0.04)';ctx.fillRect(bx,by,bw,s*0.8);
+    // Windows — warm gold dots
+    const isTD=c==='#060408'||c==='#080610';
+    const wW=Math.max(1.2*s,bw*0.12),wH=Math.max(1.5*s,bh*0.018);
+    for(let wy=2.5*s;wy<bh-2*s;wy+=wH+2.2*s){
+      for(let wx=1.5*s;wx<bw-1.5*s;wx+=wW+1.3*s){
+        if(seeded(x*200+wy*7+wx*3)>0.30){
           const br=seeded(x*200+wy*7+wx*3+50);
-          if(wc==='cold') ctx.fillStyle=br>0.5?'rgba(180,210,255,0.5)':'rgba(140,170,230,0.25)';
-          else ctx.fillStyle=br>0.6?'rgba(255,220,100,0.75)':br>0.3?'rgba(255,190,70,0.5)':'rgba(220,200,140,0.2)';
-          ctx.fillRect(bx+wx,by+wy,winW,winH);
+          if(isTD) ctx.fillStyle=br>0.5?'rgba(180,210,255,0.45)':'rgba(140,170,230,0.20)';
+          else ctx.fillStyle=br>0.6?'rgba(255,220,100,0.70)':br>0.3?'rgba(255,190,70,0.45)':'rgba(200,180,120,0.18)';
+          ctx.fillRect(bx+wx,by+wy,wW,wH);
         }
       }
     }
   }
 
-  // === LAYER 1: Far background condos (CityPlace west, east condos) ===
-  // These are lower, further back, slightly faded
-  ctx.globalAlpha=0.6;
-  bldg(0.05,0.018,0.06,'#08061a');bldg(0.07,0.022,0.09,'#0a081c');
-  bldg(0.095,0.02,0.07,'#08061a');bldg(0.12,0.025,0.11,'#0a081c');
-  bldg(0.15,0.018,0.08,'#08061a');bldg(0.17,0.02,0.13,'#0c0a1e');
-  bldg(0.195,0.022,0.10,'#0a081c');bldg(0.22,0.018,0.15,'#0c0a1e');
-  // East side condos
-  bldg(0.78,0.02,0.08,'#08061a');bldg(0.805,0.025,0.06,'#0a081c');
-  bldg(0.835,0.018,0.05,'#08061a');bldg(0.86,0.02,0.04,'#0a081c');
-  bldg(0.885,0.022,0.03,'#08061a');
-  ctx.globalAlpha=1;
-
-  // === LAYER 2: Mid-ground condos (closer, taller) ===
-  bldg(0.18,0.02,0.12,'#0e0c22');bldg(0.205,0.025,0.17,'#100e24');
-  bldg(0.235,0.02,0.14,'#0e0c22');bldg(0.26,0.022,0.18,'#100e24');
-
-  // === CN TOWER — THE defining feature, dramatically tall ===
-  const cnH=H*0.50;
-  const cnTop=cnBase-cnH;
-  // Ambient glow behind tower
-  const cnAmb=ctx.createRadialGradient(cnX,cnBase-cnH*0.65,0,cnX,cnBase-cnH*0.65,cnH*0.35);
-  cnAmb.addColorStop(0,'rgba(255,20,70,0.10)');cnAmb.addColorStop(0.6,'rgba(255,20,70,0.03)');cnAmb.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=cnAmb;ctx.fillRect(cnX-cnH*0.35,cnTop,cnH*0.7,cnH);
-  // Base tripod legs — wide taper
-  ctx.fillStyle='#18101e';
-  ctx.beginPath();
-  ctx.moveTo(cnX-1*s,cnBase-cnH*0.33);ctx.lineTo(cnX+1*s,cnBase-cnH*0.33);
-  ctx.lineTo(cnX+7*s,cnBase);ctx.lineTo(cnX-7*s,cnBase);ctx.closePath();ctx.fill();
-  // Main shaft
-  ctx.fillStyle='#882244';
-  ctx.fillRect(cnX-0.7*s,cnTop,1.4*s,cnH);
-  // SkyPod (lower, smaller pod)
-  const spY=cnBase-cnH*0.55;
-  ctx.fillStyle='#aa2244';
-  ctx.beginPath();ctx.ellipse(cnX,spY,3*s,1.8*s,0,0,Math.PI*2);ctx.fill();
-  // Main observation pod — THE iconic shape
-  const podY=cnBase-cnH*0.68;
-  // Glow halo
-  const gp=Math.sin(frame*0.03)*0.06+0.20;
-  ctx.fillStyle=`rgba(255,15,60,${gp})`;ctx.beginPath();ctx.arc(cnX,podY,18*s,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=`rgba(255,30,80,${gp*0.4})`;ctx.beginPath();ctx.arc(cnX,podY,30*s,0,Math.PI*2);ctx.fill();
-  // Pod disc
+  // === CN TOWER — Must be THE dominant feature, ~2.5x tallest building ===
+  const cnH=H*0.52; // much taller than First Canadian Place (0.38)
+  const cnTop=B-cnH;
+  // Pink/red ambient glow
+  const cnAmb=ctx.createRadialGradient(cnX,B-cnH*0.65,0,cnX,B-cnH*0.65,cnH*0.30);
+  cnAmb.addColorStop(0,'rgba(255,20,70,0.12)');cnAmb.addColorStop(0.5,'rgba(255,20,70,0.04)');cnAmb.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=cnAmb;ctx.fillRect(cnX-cnH*0.3,cnTop-12*s,cnH*0.6,cnH+12*s);
+  // Tripod base
+  ctx.fillStyle='#1a1020';
+  ctx.beginPath();ctx.moveTo(cnX-1.2*s,B-cnH*0.30);ctx.lineTo(cnX+1.2*s,B-cnH*0.30);
+  ctx.lineTo(cnX+8*s,B);ctx.lineTo(cnX-8*s,B);ctx.closePath();ctx.fill();
+  // Main shaft — thin but visible
+  ctx.fillStyle='#993355';ctx.fillRect(cnX-s*0.8,cnTop,s*1.6,cnH);
+  // SkyPod (lower observation deck)
+  const spY=B-cnH*0.52;
+  ctx.fillStyle='#bb3355';
+  ctx.beginPath();ctx.ellipse(cnX,spY,3.5*s,2*s,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,130,170,0.6)';
+  ctx.beginPath();ctx.ellipse(cnX,spY,2.5*s,0.8*s,0,0,Math.PI*2);ctx.fill();
+  // MAIN POD — large, vivid red/pink, THE iconic shape
+  const podY=B-cnH*0.67;
+  // Outer glow (large)
+  const gp=Math.sin(frame*0.03)*0.06+0.22;
+  ctx.fillStyle=`rgba(255,10,50,${gp*0.4})`;ctx.beginPath();ctx.arc(cnX,podY,32*s,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=`rgba(255,20,70,${gp})`;ctx.beginPath();ctx.arc(cnX,podY,18*s,0,Math.PI*2);ctx.fill();
+  // Pod disc body
   ctx.fillStyle='#dd1155';
-  ctx.beginPath();ctx.ellipse(cnX,podY,8*s,4.5*s,0,0,Math.PI*2);ctx.fill();
-  // Window band
-  ctx.fillStyle='rgba(255,150,190,0.85)';
-  ctx.beginPath();ctx.ellipse(cnX,podY+0.5*s,7*s,1.3*s,0,0,Math.PI*2);ctx.fill();
-  // Pod top
+  ctx.beginPath();ctx.ellipse(cnX,podY,9*s,5*s,0,0,Math.PI*2);ctx.fill();
+  // Observation window band (bright horizontal stripe)
+  ctx.fillStyle='rgba(255,160,200,0.9)';
+  ctx.beginPath();ctx.ellipse(cnX,podY+0.5*s,8*s,1.5*s,0,0,Math.PI*2);ctx.fill();
+  // Pod top cap
   ctx.fillStyle='#ee3377';
-  ctx.beginPath();ctx.ellipse(cnX,podY-1.5*s,6*s,2*s,0,0,Math.PI*2);ctx.fill();
-  // Pod underside
+  ctx.beginPath();ctx.ellipse(cnX,podY-2*s,6.5*s,2.2*s,0,0,Math.PI*2);ctx.fill();
+  // Pod underside shadow
   ctx.fillStyle='#881040';
-  ctx.beginPath();ctx.ellipse(cnX,podY+2.5*s,6.5*s,2*s,0,0,Math.PI*2);ctx.fill();
-  // Upper shaft
-  ctx.fillStyle='#aa3060';ctx.fillRect(cnX-0.5*s,cnTop,1*s,cnH*0.32);
+  ctx.beginPath();ctx.ellipse(cnX,podY+3*s,7*s,2.2*s,0,0,Math.PI*2);ctx.fill();
+  // Upper shaft (above pod)
+  ctx.fillStyle='#bb4070';ctx.fillRect(cnX-s*0.5,cnTop,s*1,cnH*0.33);
   // Antenna
-  ctx.fillStyle='#cc5080';ctx.fillRect(cnX-0.3*s,cnTop-12*s,0.6*s,12*s);
-  // Blinking light
+  ctx.fillStyle='#cc5080';ctx.fillRect(cnX-s*0.3,cnTop-14*s,s*0.6,14*s);
+  // Blinking red light at tip
   if(Math.sin(frame*0.15)>0){
-    ctx.fillStyle='#ff0020';ctx.beginPath();ctx.arc(cnX,cnTop-12*s,1.8*s,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(255,20,0,0.3)';ctx.beginPath();ctx.arc(cnX,cnTop-12*s,5*s,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff0020';ctx.beginPath();ctx.arc(cnX,cnTop-14*s,2*s,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,20,0,0.35)';ctx.beginPath();ctx.arc(cnX,cnTop-14*s,6*s,0,Math.PI*2);ctx.fill();
   }
 
-  // === ROGERS CENTRE / SKYDOME — wide low dome, right of CN Tower ===
-  const sdW=W*0.10,sdH=H*0.055;
-  // Blue glow
-  const dGr=ctx.createRadialGradient(sdCx,cnBase-sdH,sdW*0.1,sdCx,cnBase-sdH,sdW*0.9);
-  dGr.addColorStop(0,'rgba(30,140,255,0.6)');dGr.addColorStop(0.4,'rgba(20,100,240,0.3)');dGr.addColorStop(0.7,'rgba(10,60,200,0.1)');dGr.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=dGr;ctx.fillRect(sdCx-sdW,cnBase-sdH*4,sdW*2,sdH*5);
-  // Dome shape
+  // === ROGERS CENTRE / SKYDOME ===
+  const sdW=W*0.10,sdH=H*0.05;
+  // Blue glow (large, vivid)
+  const sdGl=ctx.createRadialGradient(sdCx,B-sdH,sdW*0.1,sdCx,B-sdH,sdW*1.0);
+  sdGl.addColorStop(0,'rgba(30,140,255,0.55)');sdGl.addColorStop(0.4,'rgba(20,100,240,0.25)');sdGl.addColorStop(0.7,'rgba(10,60,200,0.08)');sdGl.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=sdGl;ctx.fillRect(sdCx-sdW*1.2,B-sdH*5,sdW*2.4,sdH*6);
+  // Dome body
   ctx.fillStyle='#152840';
-  ctx.beginPath();ctx.moveTo(sdCx-sdW/2,cnBase);ctx.quadraticCurveTo(sdCx,cnBase-sdH*2.8,sdCx+sdW/2,cnBase);ctx.closePath();ctx.fill();
-  // Lit surface
-  ctx.fillStyle='rgba(40,120,255,0.45)';
-  ctx.beginPath();ctx.moveTo(sdCx-sdW/2+2*s,cnBase);ctx.quadraticCurveTo(sdCx,cnBase-sdH*2.5,sdCx+sdW/2-2*s,cnBase);ctx.closePath();ctx.fill();
-  // Ribs
-  ctx.strokeStyle='rgba(100,200,255,0.5)';ctx.lineWidth=0.8*s;
-  for(let i=1;i<=4;i++){const t=i/5;const rx=sdCx-sdW/2+sdW*t;ctx.beginPath();ctx.moveTo(rx,cnBase);ctx.lineTo(rx,cnBase-sdH*2.8*Math.sin(t*Math.PI));ctx.stroke();}
-
-  // === LAYER 3: Financial district towers (THE cluster) ===
-  // Left of cluster (between dome and main towers)
-  bldg(0.43,0.018,0.10,'#0c0a1a');bldg(0.45,0.015,0.12,'#0e0c20');
-  // First Canadian Place — tallest rectangular building, lighter color (white marble IRL)
-  bldg(0.47,0.038,0.35,'#28264a','gold');
-  // Trump Tower / slim condo
-  bldg(0.51,0.02,0.20,'#12102a');
-  // TD Centre towers — very dark (black steel IRL)
-  bldg(0.535,0.035,0.28,'#050508','cold');
-  bldg(0.575,0.03,0.24,'#070710','cold');
-  // Scotia Plaza — tall, slightly reddish
-  bldg(0.61,0.035,0.32,'#201020');
-  // Commerce Court
-  bldg(0.65,0.03,0.26,'#161434');
-  // Brookfield Place
-  bldg(0.685,0.028,0.22,'#1a1838');
-  // Royal Bank Plaza (gold-tinted windows IRL)
-  bldg(0.345,0.025,0.16,'#14122a');
-  // Right side condos/buildings
-  bldg(0.72,0.025,0.16,'#121028');bldg(0.75,0.02,0.12,'#0e0c22');
-  bldg(0.775,0.022,0.09,'#0c0a1e');
-
-  // === Warm city glow at horizon ===
-  const hGlow=ctx.createLinearGradient(0,cnBase-H*0.06,0,cnBase+H*0.03);
-  hGlow.addColorStop(0,'rgba(0,0,0,0)');hGlow.addColorStop(0.5,'rgba(255,160,60,0.05)');hGlow.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=hGlow;ctx.fillRect(W*0.15,cnBase-H*0.06,W*0.65,H*0.09);
+  ctx.beginPath();ctx.moveTo(sdCx-sdW*0.55,B);ctx.quadraticCurveTo(sdCx,B-sdH*3,sdCx+sdW*0.55,B);ctx.closePath();ctx.fill();
+  // Blue lit surface
+  ctx.fillStyle='rgba(40,130,255,0.45)';
+  ctx.beginPath();ctx.moveTo(sdCx-sdW*0.48,B);ctx.quadraticCurveTo(sdCx,B-sdH*2.6,sdCx+sdW*0.48,B);ctx.closePath();ctx.fill();
+  // Structural ribs
+  ctx.strokeStyle='rgba(100,200,255,0.5)';ctx.lineWidth=s*0.7;
+  for(let i=1;i<=4;i++){const t=i/5;const rx=sdCx-sdW*0.55+sdW*1.1*t;
+    ctx.beginPath();ctx.moveTo(rx,B);ctx.lineTo(rx,B-sdH*3*Math.sin(t*Math.PI));ctx.stroke();}
+  // Base lit band
+  ctx.fillStyle='rgba(50,160,255,0.5)';ctx.fillRect(sdCx-sdW*0.55,B-2*s,sdW*1.1,2.5*s);
 
   // === LAKE ONTARIO ===
-  const waterY=cnBase;
-  const waterH=H-cnBase;
+  const waterY=B;
+  const waterH=H-B;
   drawGrad(0,waterY,W,waterH,'#040810','#010305');
 
-  // Entire skyline reflection (mirrored, faded)
-  ctx.save();ctx.translate(0,waterY*2);ctx.scale(1,-1);ctx.globalAlpha=0.15;
-  // Re-draw just the building silhouettes as reflection
-  const rBldgs=[[0.18,0.02,0.12],[0.205,0.025,0.17],[0.235,0.02,0.14],[0.26,0.022,0.18],
-    [0.43,0.018,0.10],[0.45,0.015,0.12],[0.47,0.038,0.35],[0.51,0.02,0.20],
-    [0.535,0.035,0.28],[0.575,0.03,0.24],[0.61,0.035,0.32],[0.65,0.03,0.26],
-    [0.685,0.028,0.22],[0.345,0.025,0.16],[0.72,0.025,0.16],[0.75,0.02,0.12]];
-  for(const[x,w,h]of rBldgs){ctx.fillStyle='#0a0818';ctx.fillRect(W*x,cnBase-H*h,W*w,H*h);}
+  // --- Reflected skyline silhouette (flipped, faded) ---
+  ctx.save();ctx.translate(0,waterY*2);ctx.scale(1,-1);ctx.globalAlpha=0.12;
+  // Buildings reflection
+  for(const[x,w,h,c]of bldgs){ctx.fillStyle=c||'#080614';ctx.fillRect(W*x,B-H*h,W*w,H*h);}
+  // CN Tower reflection  
+  ctx.fillStyle='#882244';ctx.fillRect(cnX-s*0.8,cnTop,s*1.6,cnH);
+  ctx.fillStyle='#dd1155';ctx.beginPath();ctx.ellipse(cnX,podY,9*s,5*s,0,0,Math.PI*2);ctx.fill();
+  // Dome reflection
+  ctx.fillStyle='#152840';ctx.beginPath();ctx.moveTo(sdCx-sdW*0.55,B);ctx.quadraticCurveTo(sdCx,B-sdH*3,sdCx+sdW*0.55,B);ctx.closePath();ctx.fill();
   ctx.globalAlpha=1;ctx.restore();
 
-  // CN Tower pink/red reflection column
-  const cnRG=ctx.createLinearGradient(cnX-18*s,0,cnX+18*s,0);
-  cnRG.addColorStop(0,'rgba(0,0,0,0)');cnRG.addColorStop(0.3,'rgba(255,20,60,0.08)');cnRG.addColorStop(0.5,'rgba(255,30,80,0.20)');cnRG.addColorStop(0.7,'rgba(255,20,60,0.08)');cnRG.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=cnRG;ctx.fillRect(cnX-18*s,waterY,36*s,waterH);
-  // Broken light streaks in water
-  for(let dy=1*s;dy<waterH;dy+=1.3*s){
+  // --- CN Tower pink reflection in water ---
+  for(let dy=0;dy<waterH;dy+=1.2*s){
     const wb=Math.sin(frame*0.025+dy*0.08)*4*s;
-    const f=Math.pow(1-dy/waterH,0.6);
-    ctx.fillStyle=`rgba(255,20,70,${0.35*f})`;ctx.fillRect(cnX+wb-3*s,waterY+dy,6*s,1.2*s);
+    const f=Math.pow(1-dy/waterH,0.55);
+    ctx.fillStyle=`rgba(255,20,70,${0.30*f})`;ctx.fillRect(cnX+wb-3*s,waterY+dy,6*s,1.2*s);
+    ctx.fillStyle=`rgba(255,60,120,${0.12*f})`;ctx.fillRect(cnX+wb-7*s,waterY+dy,14*s,0.6*s);
   }
-  // SkyDome blue reflection
-  const sdRG=ctx.createLinearGradient(sdCx-14*s,0,sdCx+14*s,0);
-  sdRG.addColorStop(0,'rgba(0,0,0,0)');sdRG.addColorStop(0.3,'rgba(30,100,255,0.06)');sdRG.addColorStop(0.5,'rgba(50,150,255,0.16)');sdRG.addColorStop(0.7,'rgba(30,100,255,0.06)');sdRG.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=sdRG;ctx.fillRect(sdCx-14*s,waterY,28*s,waterH*0.8);
-  for(let dy=1*s;dy<waterH*0.7;dy+=1.5*s){
+  // --- SkyDome blue reflection ---
+  for(let dy=0;dy<waterH*0.7;dy+=1.4*s){
     const wb=Math.sin(frame*0.02+dy*0.12)*4*s;
-    const f=Math.pow(1-dy/(waterH*0.7),0.6);
-    ctx.fillStyle=`rgba(40,140,255,${0.25*f})`;ctx.fillRect(sdCx+wb-4*s,waterY+dy,8*s,1.2*s);
+    const f=Math.pow(1-dy/(waterH*0.7),0.55);
+    ctx.fillStyle=`rgba(40,140,255,${0.22*f})`;ctx.fillRect(sdCx+wb-4*s,waterY+dy,8*s,1.2*s);
   }
-  // General city light shimmer on water
-  const towers=[0.47,0.535,0.575,0.61,0.65,0.685];
-  for(const tx of towers){
-    const rx=W*tx;
-    const rG=ctx.createLinearGradient(0,waterY,0,waterY+waterH*0.5);
-    rG.addColorStop(0,'rgba(200,170,60,0.10)');rG.addColorStop(0.5,'rgba(200,170,60,0.03)');rG.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=rG;ctx.fillRect(rx-2*s,waterY,4*s,waterH*0.5);
+  // --- City light golden shimmer ---
+  for(const[x,w,h]of bldgs){
+    if(h>0.15){
+      const rx=W*(x+w/2);
+      const rG=ctx.createLinearGradient(0,waterY,0,waterY+waterH*0.45);
+      rG.addColorStop(0,'rgba(220,180,60,0.08)');rG.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=rG;ctx.fillRect(rx-2*s,waterY,4*s,waterH*0.45);
+    }
   }
-  // Shimmer lines
-  for(let wl=0;wl<6;wl++){
-    const wy=waterY+5*s+wl*waterH*0.12;
-    ctx.fillStyle=`rgba(80,120,180,${0.025+Math.sin(frame*0.015+wl*1.5)*0.01})`;
-    ctx.fillRect(0,wy,W,0.7*s);
+  // Subtle horizontal shimmer
+  for(let wl=0;wl<5;wl++){
+    const wy=waterY+4*s+wl*waterH*0.15;
+    ctx.fillStyle=`rgba(80,120,180,${0.02+Math.sin(frame*0.012+wl*1.8)*0.01})`;
+    ctx.fillRect(0,wy,W,s*0.6);
   }
   
   // === TITLE TEXT — bold, colorful, TMNT-style ===
