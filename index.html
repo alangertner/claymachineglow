@@ -1607,57 +1607,107 @@ function drawTitle(){
   // === Dense Toronto skyline (TMNT-style, fills bottom half) ===
   const skyBase=H*0.75;
   
-  // Far buildings (dark silhouettes with lit windows)
-  const farBldgs=[[0.02,0.55],[0.07,0.48],[0.12,0.62],[0.17,0.44],[0.22,0.58],[0.27,0.52],[0.32,0.65],[0.37,0.42],[0.42,0.7],[0.47,0.5],[0.52,0.6],[0.57,0.45],[0.62,0.68],[0.67,0.55],[0.72,0.48],[0.77,0.62],[0.82,0.5],[0.87,0.56],[0.92,0.43],[0.96,0.52]];
+  // === TORONTO SKYLINE (viewed from lake, south-facing) ===
+  
+  // CN Tower — far left, tallest structure, unmistakable
+  const cnX=W*0.08;
+  const cnBase=skyBase;
+  const cnH=H*0.58;
+  // Main shaft
+  drawGrad(cnX-2*s,cnBase-cnH,4*s,cnH,'#3a3050','#2a2040');
+  // Antenna
+  drawRect(cnX-0.5*s,cnBase-cnH-12*s,1*s,12*s,'#3a3050');
+  // Main pod (the donut)
+  drawGrad(cnX-10*s,cnBase-cnH*0.72,20*s,10*s,'#4a3a60','#3a2a50');
+  // Pod observation ring — lit up
+  drawRect(cnX-8*s,cnBase-cnH*0.72+3*s,16*s,2*s,'rgba(255,200,80,0.6)');
+  drawRect(cnX-9*s,cnBase-cnH*0.72+5*s,18*s,2*s,'rgba(255,180,60,0.4)');
+  // SkyPod (smaller, below main pod)
+  drawGrad(cnX-6*s,cnBase-cnH*0.62,12*s,5*s,'#3a2a50','#2a1a40');
+  // Pod glow
+  ctx.fillStyle='rgba(255,120,50,0.12)';ctx.beginPath();ctx.arc(cnX,cnBase-cnH*0.7,18*s,0,Math.PI*2);ctx.fill();
+  // Base widening
+  ctx.fillStyle='#2a2040';
+  ctx.beginPath();ctx.moveTo(cnX-2*s,cnBase-cnH*0.55);ctx.lineTo(cnX+2*s,cnBase-cnH*0.55);
+  ctx.lineTo(cnX+8*s,cnBase);ctx.lineTo(cnX-8*s,cnBase);ctx.closePath();ctx.fill();
+  
+  // Rogers Centre / SkyDome — distinctive dome shape, next to CN Tower
+  const sdX=W*0.17,sdW=W*0.12,sdH=H*0.1;
+  const sdY=cnBase-sdH;
+  ctx.fillStyle='#2a2244';
+  ctx.beginPath();ctx.moveTo(sdX,cnBase);
+  ctx.quadraticCurveTo(sdX+sdW*0.5,sdY-sdH*0.6,sdX+sdW,cnBase);
+  ctx.closePath();ctx.fill();
+  // Dome ridges
+  ctx.strokeStyle='#3a3258';ctx.lineWidth=1;
+  for(let i=1;i<4;i++){
+    const rx=sdX+sdW*(i/4);
+    ctx.beginPath();ctx.moveTo(rx,cnBase);ctx.quadraticCurveTo(rx,sdY-sdH*0.3,rx,sdY+sdH*0.2);ctx.stroke();
+  }
+  // Lit strip at base
+  drawRect(sdX+2*s,cnBase-4*s,sdW-4*s,3*s,'rgba(255,200,80,0.3)');
+  
+  // Far buildings (financial district towers — right of CN Tower)
+  const farBldgs=[[0.28,0.52],[0.33,0.60],[0.38,0.72],[0.42,0.65],[0.46,0.55],[0.50,0.68],[0.54,0.48],[0.58,0.58],[0.62,0.45],[0.66,0.62],[0.70,0.50],[0.74,0.42],[0.78,0.55],[0.82,0.38],[0.86,0.48],[0.90,0.35],[0.94,0.42]];
   for(const[px,ph]of farBldgs){
-    const bx=W*px,bw=W*0.055,bh=H*ph*0.45;
+    const bx=W*px,bw=W*0.05,bh=H*ph*0.4;
     const by=skyBase-bh;
-    // Building body — dark purple tones
     drawGrad(bx,by,bw,bh,'#1a1030','#0a0818');
-    // Lit windows (yellow/orange)
+    // Lit windows
     for(let wy=4*s;wy<bh-4*s;wy+=6*s){
       for(let wx=2*s;wx<bw-3*s;wx+=5*s){
         if(seeded(px*100+wy+wx)>0.4){
-          const wc=seeded(px*100+wy+wx+99)>0.5?'rgba(255,200,80,0.6)':'rgba(255,160,50,0.4)';
-          ctx.fillStyle=wc;ctx.fillRect(bx+wx,by+wy,3*s,3*s);
+          ctx.fillStyle=seeded(px*100+wy+wx+99)>0.5?'rgba(255,200,80,0.6)':'rgba(255,160,50,0.4)';
+          ctx.fillRect(bx+wx,by+wy,3*s,3*s);
         }
       }
     }
-    // Roof edge
     drawRect(bx-1,by,bw+2,2*s,'#2a1840');
   }
   
-  // CN Tower (prominent, left-center)
-  const cnX=W*0.35;
-  drawGrad(cnX-2*s,skyBase-H*0.55,4*s,H*0.55,'#2a2040','#1a1030');
-  drawRect(cnX-1*s,skyBase-H*0.55-8*s,2*s,8*s,'#2a2040');// antenna
-  // Pod
-  drawGrad(cnX-8*s,skyBase-H*0.4,16*s,8*s,'#3a2850','#2a1840');
-  drawRect(cnX-6*s,skyBase-H*0.4+2*s,12*s,2*s,'rgba(255,200,80,0.5)');// observation deck lights
-  // Pod glow
-  ctx.fillStyle='rgba(255,100,50,0.1)';ctx.beginPath();ctx.arc(cnX,skyBase-H*0.38,15*s,0,Math.PI*2);ctx.fill();
+  // Recognizable towers: First Canadian Place (tallest), TD Tower, Scotia Plaza
+  // First Canadian Place — tallest, white-ish
+  const fcpX=W*0.38,fcpW=W*0.045,fcpH=H*0.38;
+  drawGrad(fcpX,skyBase-fcpH,fcpW,fcpH,'#3a3858','#2a2848');
+  drawRect(fcpX,skyBase-fcpH,fcpW,2*s,'#4a4868');
+  for(let wy=4*s;wy<fcpH-4*s;wy+=5*s){for(let wx=2*s;wx<fcpW-2*s;wx+=4*s){if(seeded(38+wy+wx)>0.3){ctx.fillStyle='rgba(255,220,120,0.5)';ctx.fillRect(fcpX+wx,skyBase-fcpH+wy,2.5*s,3*s);}}}
+  // TD Centre — dark black box
+  const tdX=W*0.44,tdW=W*0.04,tdH=H*0.3;
+  drawGrad(tdX,skyBase-tdH,tdW,tdH,'#0a0a18','#050510');
+  for(let wy=4*s;wy<tdH-4*s;wy+=5*s){for(let wx=1*s;wx<tdW-1*s;wx+=3*s){if(seeded(44+wy+wx)>0.5){ctx.fillStyle='rgba(255,200,80,0.4)';ctx.fillRect(tdX+wx,skyBase-tdH+wy,2*s,3*s);}}}
   
-  // Mid-ground buildings (slightly brighter purple, more detail)
-  const midBldgs=[[0.0,0.32,0.08],[0.08,0.28,0.07],[0.15,0.38,0.06],[0.22,0.24,0.065],[0.28,0.35,0.07],[0.42,0.3,0.08],[0.5,0.42,0.065],[0.58,0.26,0.07],[0.65,0.36,0.06],[0.72,0.28,0.075],[0.78,0.34,0.065],[0.85,0.25,0.07],[0.92,0.32,0.06]];
+  // Mid-ground buildings
+  const midBldgs=[[0.22,0.28,0.06],[0.30,0.22,0.05],[0.48,0.25,0.055],[0.55,0.30,0.06],[0.62,0.22,0.05],[0.68,0.26,0.055],[0.75,0.20,0.05],[0.82,0.24,0.06],[0.90,0.18,0.05]];
   for(const[px,ph,pw]of midBldgs){
-    const bx=W*px,bw=W*pw,bh=H*ph*0.45;
+    const bx=W*px,bw=W*pw,bh=H*ph*0.4;
     const by=skyBase-bh;
     drawGrad(bx,by,bw,bh,'#2a1848','#1a1030');
-    // Bright windows
-    for(let wy=3*s;wy<bh-3*s;wy+=5*s){
-      for(let wx=2*s;wx<bw-2*s;wx+=4*s){
-        if(seeded(px*200+wy+wx)>0.35){
-          ctx.fillStyle=seeded(px*200+wy+wx+50)>0.6?'rgba(255,220,100,0.7)':'rgba(200,180,255,0.3)';
-          ctx.fillRect(bx+wx,by+wy,2.5*s,3*s);
-        }
-      }
-    }
+    for(let wy=3*s;wy<bh-3*s;wy+=5*s){for(let wx=2*s;wx<bw-2*s;wx+=4*s){if(seeded(px*200+wy+wx)>0.35){ctx.fillStyle=seeded(px*200+wy+wx+50)>0.6?'rgba(255,220,100,0.7)':'rgba(200,180,255,0.3)';ctx.fillRect(bx+wx,by+wy,2.5*s,3*s);}}}
   }
   
-  // Foreground street level
-  drawGrad(0,skyBase,W,H-skyBase,'#1a1030','#0a0818');
-  // Street line
-  drawRect(0,skyBase,W,2*s,'#3a2858');
+  // === Lake Ontario waterfront ===
+  const waterY=skyBase;
+  const waterH=H-skyBase;
+  // Dark water
+  drawGrad(0,waterY,W,waterH,'#0a1a2a','#050e18');
+  // Reflection shimmer
+  for(let i=0;i<20;i++){
+    const rx=seeded(i+400)*W;
+    const ry=waterY+seeded(i+450)*waterH*0.8+4*s;
+    const rw=8*s+seeded(i+500)*15*s;
+    const shimmer=Math.sin(frame*0.04+i*2)*0.15+0.15;
+    ctx.fillStyle=`rgba(255,200,100,${shimmer})`;
+    ctx.fillRect(rx,ry,rw,1.5*s);
+  }
+  // CN Tower reflection in water
+  ctx.globalAlpha=0.12;
+  drawGrad(cnX-2*s,waterY+2*s,4*s,waterH*0.5,'#3a3050','#0a1a2a');
+  ctx.globalAlpha=1;
+  // Gentle wave line at waterfront
+  ctx.strokeStyle='rgba(100,150,200,0.2)';ctx.lineWidth=1.5*s;
+  ctx.beginPath();ctx.moveTo(0,waterY+2*s);
+  for(let x=0;x<=W;x+=10){ctx.lineTo(x,waterY+2*s+Math.sin(x*0.02+frame*0.03)*2*s);}
+  ctx.stroke();
   
   // Neon signs on buildings (animated)
   const neonT=frame*0.06;
@@ -1716,15 +1766,28 @@ function drawTitle(){
     ctx.textAlign='center';ctx.fillText('TAP TO START',cx,H*0.88);
   }
   
-  // Minimal music toggle
+  // Music toggle
   const mbY=H*0.93;
-  const pulse=musicOn?1:Math.sin(frame*0.1)*0.3+0.7;
-  ctx.globalAlpha=pulse;
-  ctx.font=`bold ${Math.min(12*s,W*0.04)}px "Courier New",monospace`;
   ctx.textAlign='center';
-  ctx.fillStyle=musicOn?'#44ff66':'#888';
-  ctx.fillText(musicOn?'♪ ON':'♪ OFF',cx,mbY);
-  ctx.globalAlpha=1;
+  if(musicOn){
+    ctx.font=`bold ${Math.min(10*s,W*0.035)}px "Courier New",monospace`;
+    ctx.fillStyle='#44ff66';ctx.fillText('♪ MUSIC ON',cx,mbY);
+  }else{
+    const pulse=Math.sin(frame*0.08)*0.3+0.7;
+    const btnW=Math.min(220,W*0.55),btnH=Math.min(40*s,H*0.055);
+    const btnX=cx-btnW/2,btnY=mbY-btnH*0.65;
+    ctx.shadowColor='#ffaa00';ctx.shadowBlur=20*pulse;
+    const btnGrad=ctx.createLinearGradient(btnX,btnY,btnX,btnY+btnH);
+    btnGrad.addColorStop(0,`rgba(255,170,0,${0.7*pulse})`);
+    btnGrad.addColorStop(1,`rgba(200,100,0,${0.6*pulse})`);
+    ctx.fillStyle=btnGrad;
+    const r=btnH*0.3;
+    ctx.beginPath();ctx.moveTo(btnX+r,btnY);ctx.lineTo(btnX+btnW-r,btnY);ctx.quadraticCurveTo(btnX+btnW,btnY,btnX+btnW,btnY+r);ctx.lineTo(btnX+btnW,btnY+btnH-r);ctx.quadraticCurveTo(btnX+btnW,btnY+btnH,btnX+btnW-r,btnY+btnH);ctx.lineTo(btnX+r,btnY+btnH);ctx.quadraticCurveTo(btnX,btnY+btnH,btnX,btnY+btnH-r);ctx.lineTo(btnX,btnY+r);ctx.quadraticCurveTo(btnX,btnY,btnX+r,btnY);ctx.closePath();ctx.fill();
+    ctx.shadowBlur=0;ctx.shadowColor='transparent';
+    ctx.strokeStyle=`rgba(255,220,100,${pulse})`;ctx.lineWidth=2;ctx.stroke();
+    ctx.font=`bold ${Math.min(13*s,W*0.042)}px Arial,sans-serif`;
+    ctx.fillStyle='#fff';ctx.fillText('🎵  TAP FOR MUSIC',cx,mbY+2*s);
+  }
 }
 // Music toggle click zone
 let musicBtnRect={x:0,y:0,w:0,h:0};
