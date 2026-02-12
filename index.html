@@ -1592,7 +1592,7 @@ function drawTitle(){
   const s=SCALE();
   // === TMNT-style purple gradient night sky ===
   const bgGrad=ctx.createLinearGradient(0,0,0,H);
-  bgGrad.addColorStop(0,'#1a0830');bgGrad.addColorStop(0.25,'#2a1050');bgGrad.addColorStop(0.5,'#3a1860');bgGrad.addColorStop(0.7,'#2a1248');bgGrad.addColorStop(1,'#0a0415');
+  bgGrad.addColorStop(0,'#06020e');bgGrad.addColorStop(0.2,'#0e0620');bgGrad.addColorStop(0.45,'#1a0c35');bgGrad.addColorStop(0.7,'#140828');bgGrad.addColorStop(1,'#06020a');
   ctx.fillStyle=bgGrad;ctx.fillRect(0,0,W,H);
   
   // Moon
@@ -1631,68 +1631,77 @@ function drawTitle(){
   ctx.fillStyle='#2a2030';
   ctx.beginPath();ctx.moveTo(cnX-1.5*s,cnBase-cnH*0.42);ctx.lineTo(cnX+1.5*s,cnBase-cnH*0.42);
   ctx.lineTo(cnX+8*s,cnBase);ctx.lineTo(cnX-8*s,cnBase);ctx.closePath();ctx.fill();
-  // Main shaft — VERY thin, 1.5px
-  drawRect(cnX-0.75*s,cnTop,1.5*s,cnH,'#6a4058');
+  // Main shaft — VERY thin, lit pink/red
+  drawRect(cnX-0.75*s,cnTop,1.5*s,cnH,'#aa3050');
+  // Shaft ambient glow (pink haze along tower)
+  const shaftGlow=ctx.createLinearGradient(cnX-12*s,cnTop,cnX+12*s,cnTop);
+  shaftGlow.addColorStop(0,'rgba(0,0,0,0)');shaftGlow.addColorStop(0.3,'rgba(255,40,80,0.04)');shaftGlow.addColorStop(0.5,'rgba(255,40,80,0.07)');shaftGlow.addColorStop(0.7,'rgba(255,40,80,0.04)');shaftGlow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=shaftGlow;ctx.fillRect(cnX-12*s,cnTop,24*s,cnH);
   // SkyPod (lower, smaller)
   const skyPodY=cnBase-cnH*0.62;
-  ctx.fillStyle='#884466';
+  ctx.fillStyle='#cc3355';
   ctx.beginPath();ctx.ellipse(cnX,skyPodY,4*s,2.5*s,0,0,Math.PI*2);ctx.fill();
-  drawRect(cnX-3*s,skyPodY-0.5*s,6*s,1*s,'rgba(255,160,200,0.5)');
-  // Main pod — disc/donut shape — BIG and visible
+  drawRect(cnX-3*s,skyPodY-0.5*s,6*s,1*s,'rgba(255,100,150,0.7)');
+  // Main pod — disc/donut shape — BIG and visible, vivid RED/PINK like real photo
   const podY=cnBase-cnH*0.72;
-  // Pod glow (behind)
-  const podGlow=Math.sin(frame*0.03)*0.06+0.18;
-  ctx.fillStyle=`rgba(255,60,140,${podGlow})`;ctx.beginPath();ctx.arc(cnX,podY,18*s,0,Math.PI*2);ctx.fill();
-  // Pod body — wide ellipse
-  ctx.fillStyle='#cc4488';
+  // Pod glow (behind) — LARGE vivid red/pink
+  const podGlow=Math.sin(frame*0.03)*0.08+0.28;
+  ctx.fillStyle=`rgba(255,20,80,${podGlow})`;ctx.beginPath();ctx.arc(cnX,podY,22*s,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=`rgba(255,50,100,${podGlow*0.5})`;ctx.beginPath();ctx.arc(cnX,podY,32*s,0,Math.PI*2);ctx.fill();
+  // Pod body — wide ellipse, vivid red
+  ctx.fillStyle='#ee2266';
   ctx.beginPath();ctx.ellipse(cnX,podY,9*s,5*s,0,0,Math.PI*2);ctx.fill();
   // Pod highlight band (observation deck windows)
-  ctx.fillStyle='rgba(255,180,220,0.9)';
+  ctx.fillStyle='rgba(255,140,180,0.9)';
   ctx.beginPath();ctx.ellipse(cnX,podY+1*s,8*s,1.5*s,0,0,Math.PI*2);ctx.fill();
-  // Pod top
-  ctx.fillStyle='#dd5599';
+  // Pod top — hot pink
+  ctx.fillStyle='#ff4488';
   ctx.beginPath();ctx.ellipse(cnX,podY-1.5*s,7*s,2*s,0,0,Math.PI*2);ctx.fill();
-  // Pod underside shadow
-  ctx.fillStyle='#883060';
+  // Pod underside — deep red
+  ctx.fillStyle='#aa1040';
   ctx.beginPath();ctx.ellipse(cnX,podY+3*s,7*s,2.5*s,0,0,Math.PI*2);ctx.fill();
   // Shaft above pod to antenna base
-  drawRect(cnX-0.5*s,cnTop,1*s,cnH*0.28,'#7a5068');
-  // Antenna spire — ultra thin
-  drawRect(cnX-0.3*s,cnTop-16*s,0.6*s,16*s,'#aa7090');
+  drawRect(cnX-0.5*s,cnTop,1*s,cnH*0.28,'#cc4070');
+  // Antenna spire — ultra thin, pink-tinted
+  drawRect(cnX-0.3*s,cnTop-16*s,0.6*s,16*s,'#dd6090');
   // Antenna blinking red light
   if(Math.sin(frame*0.15)>0){
-    ctx.fillStyle='#ff2200';ctx.beginPath();ctx.arc(cnX,cnTop-16*s,1.5*s,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(255,30,0,0.25)';ctx.beginPath();ctx.arc(cnX,cnTop-16*s,5*s,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff0020';ctx.beginPath();ctx.arc(cnX,cnTop-16*s,2*s,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,20,0,0.35)';ctx.beginPath();ctx.arc(cnX,cnTop-16*s,6*s,0,Math.PI*2);ctx.fill();
   }
 
   // --- Rogers Centre / SkyDome — WIDE LOW dome, blue glow ---
   const sdCx=W*0.34,sdW=W*0.15,sdH=H*0.07;
-  // Blue glow behind dome
-  const dGrad=ctx.createRadialGradient(sdCx,cnBase-sdH*0.6,sdW*0.05,sdCx,cnBase-sdH*0.6,sdW*0.7);
-  dGrad.addColorStop(0,'rgba(30,120,255,0.5)');dGrad.addColorStop(0.5,'rgba(20,80,220,0.25)');dGrad.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=dGrad;ctx.fillRect(sdCx-sdW*0.8,cnBase-sdH*3,sdW*1.6,sdH*4.5);
+  // Blue glow behind dome — VIVID, large radius like real photo
+  const dGrad=ctx.createRadialGradient(sdCx,cnBase-sdH*0.6,sdW*0.05,sdCx,cnBase-sdH*0.6,sdW*1.0);
+  dGrad.addColorStop(0,'rgba(30,140,255,0.7)');dGrad.addColorStop(0.3,'rgba(20,100,240,0.4)');dGrad.addColorStop(0.6,'rgba(10,60,200,0.15)');dGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=dGrad;ctx.fillRect(sdCx-sdW*1.2,cnBase-sdH*4,sdW*2.4,sdH*5.5);
+  // Secondary outer glow
+  const dGrad2=ctx.createRadialGradient(sdCx,cnBase-sdH*1,sdW*0.1,sdCx,cnBase-sdH*1,sdW*1.5);
+  dGrad2.addColorStop(0,'rgba(40,120,255,0.15)');dGrad2.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=dGrad2;ctx.fillRect(sdCx-sdW*1.5,cnBase-sdH*5,sdW*3,sdH*7);
   // Dome body — solid visible shape
-  ctx.fillStyle='#1a3050';
+  ctx.fillStyle='#1a3560';
   ctx.beginPath();ctx.moveTo(sdCx-sdW/2,cnBase);
   ctx.quadraticCurveTo(sdCx,cnBase-sdH*2.5,sdCx+sdW/2,cnBase);
   ctx.closePath();ctx.fill();
-  // Blue lit surface of dome
-  ctx.fillStyle='rgba(30,100,220,0.35)';
+  // Blue lit surface of dome — brighter
+  ctx.fillStyle='rgba(40,120,255,0.5)';
   ctx.beginPath();ctx.moveTo(sdCx-sdW/2+2*s,cnBase);
   ctx.quadraticCurveTo(sdCx,cnBase-sdH*2.3,sdCx+sdW/2-2*s,cnBase);
   ctx.closePath();ctx.fill();
-  // Dome ribs (structural lines)
-  ctx.strokeStyle='rgba(80,180,255,0.5)';ctx.lineWidth=1*s;
+  // Dome ribs (structural lines) — brighter blue
+  ctx.strokeStyle='rgba(100,200,255,0.6)';ctx.lineWidth=1*s;
   for(let i=1;i<=5;i++){
     const t=i/6;const ribX=sdCx-sdW/2+sdW*t;
     const ribH=sdH*2.5*Math.sin(t*Math.PI);
     ctx.beginPath();ctx.moveTo(ribX,cnBase);ctx.lineTo(ribX,cnBase-ribH);ctx.stroke();
   }
-  // Lit band at base of dome
-  drawRect(sdCx-sdW/2,cnBase-3*s,sdW,3*s,'rgba(40,140,255,0.4)');
+  // Lit band at base of dome — brighter
+  drawRect(sdCx-sdW/2,cnBase-3*s,sdW,3*s,'rgba(50,160,255,0.55)');
   // Side walls
-  drawRect(sdCx-sdW/2,cnBase-sdH*0.5,3*s,sdH*0.5,'#1a2a40');
-  drawRect(sdCx+sdW/2-3*s,cnBase-sdH*0.5,3*s,sdH*0.5,'#1a2a40');
+  drawRect(sdCx-sdW/2,cnBase-sdH*0.5,3*s,sdH*0.5,'#1a2a50');
+  drawRect(sdCx+sdW/2-3*s,cnBase-sdH*0.5,3*s,sdH*0.5,'#1a2a50');
 
   // --- Financial district + condos (W*0.42 to W*0.97) ---
   const towers=[
@@ -1746,42 +1755,53 @@ function drawTitle(){
     }}
   }
 
-  // === Lake Ontario ===
+  // === Lake Ontario — dark water with vivid reflections ===
   const waterY=cnBase;
   const waterH=H-cnBase;
-  drawGrad(0,waterY,W,waterH,'#0a1520','#030a10');
+  // Darker water base
+  drawGrad(0,waterY,W,waterH,'#060e18','#020508');
+  // Subtle blue-green tint near horizon
+  ctx.fillStyle='rgba(10,30,50,0.4)';ctx.fillRect(0,waterY,W,waterH*0.15);
 
-  // City light reflections — golden streaks from towers
+  // City light reflections — wider, brighter golden streaks
   for(const t of towers){
     const rx=W*t.x+W*t.w/2;
-    const rA=0.06+seeded(t.x*300)*0.05;
-    const rColor=t.wc==='cold'?[160,190,255]:[255,200,80];
-    for(let dy=2*s;dy<waterH*0.65;dy+=2.5*s){
-      const wobble=Math.sin(frame*0.02+dy*0.1+t.x*20)*3*s;
-      const fade=1-dy/(waterH*0.65);
+    const rA=0.12+seeded(t.x*300)*0.08;
+    const rColor=t.wc==='cold'?[140,180,255]:[255,200,80];
+    for(let dy=2*s;dy<waterH*0.75;dy+=2*s){
+      const wobble=Math.sin(frame*0.02+dy*0.1+t.x*20)*4*s;
+      const fade=1-dy/(waterH*0.75);
       ctx.fillStyle=`rgba(${rColor[0]},${rColor[1]},${rColor[2]},${rA*fade})`;
-      ctx.fillRect(rx+wobble-1.5*s,waterY+dy,3*s+seeded(t.x*100+dy)*2*s,1.2*s);
+      ctx.fillRect(rx+wobble-2*s,waterY+dy,4*s+seeded(t.x*100+dy)*3*s,1.5*s);
     }
   }
-  // CN Tower pink reflection
-  for(let dy=2*s;dy<waterH*0.8;dy+=2*s){
-    const wobble=Math.sin(frame*0.025+dy*0.08)*4*s;
-    const fade=1-dy/(waterH*0.8);
-    ctx.fillStyle=`rgba(255,60,140,${0.1*fade})`;
-    ctx.fillRect(cnX+wobble-2*s,waterY+dy,4*s,1.2*s);
+  // CN Tower RED/PINK reflection — VIVID, wide column like real photo
+  for(let dy=1*s;dy<waterH*0.9;dy+=1.5*s){
+    const wobble=Math.sin(frame*0.025+dy*0.08)*5*s;
+    const fade=1-dy/(waterH*0.9);
+    const bright=0.22*fade;
+    ctx.fillStyle=`rgba(255,30,80,${bright})`;
+    ctx.fillRect(cnX+wobble-4*s,waterY+dy,8*s,1.5*s);
+    // Secondary pink fringe
+    ctx.fillStyle=`rgba(255,80,140,${bright*0.4})`;
+    ctx.fillRect(cnX+wobble-7*s,waterY+dy,14*s,1*s);
   }
-  // SkyDome blue reflection
-  for(let dy=2*s;dy<waterH*0.5;dy+=2.5*s){
-    const wobble=Math.sin(frame*0.02+dy*0.12)*4*s;
-    const fade=1-dy/(waterH*0.5);
-    ctx.fillStyle=`rgba(40,130,255,${0.08*fade})`;
-    ctx.fillRect(sdCx+wobble-4*s,waterY+dy,8*s,1.2*s);
+  // SkyDome BLUE reflection — VIVID, wide like real photo
+  for(let dy=1*s;dy<waterH*0.7;dy+=2*s){
+    const wobble=Math.sin(frame*0.02+dy*0.12)*5*s;
+    const fade=1-dy/(waterH*0.7);
+    const bright=0.18*fade;
+    ctx.fillStyle=`rgba(40,140,255,${bright})`;
+    ctx.fillRect(sdCx+wobble-6*s,waterY+dy,12*s,1.5*s);
+    // Secondary blue fringe
+    ctx.fillStyle=`rgba(60,160,255,${bright*0.4})`;
+    ctx.fillRect(sdCx+wobble-10*s,waterY+dy,20*s,1*s);
   }
-  // Wave lines
-  ctx.strokeStyle='rgba(80,120,180,0.1)';ctx.lineWidth=0.8*s;
-  for(let wl=0;wl<4;wl++){
-    ctx.beginPath();ctx.moveTo(0,waterY+4*s+wl*7*s);
-    for(let x=0;x<=W;x+=6){ctx.lineTo(x,waterY+4*s+wl*7*s+Math.sin(x*0.015+frame*0.025+wl)*1.5*s);}
+  // Wave lines — slightly more visible
+  ctx.strokeStyle='rgba(60,100,160,0.12)';ctx.lineWidth=0.8*s;
+  for(let wl=0;wl<5;wl++){
+    ctx.beginPath();ctx.moveTo(0,waterY+3*s+wl*6*s);
+    for(let x=0;x<=W;x+=6){ctx.lineTo(x,waterY+3*s+wl*6*s+Math.sin(x*0.015+frame*0.025+wl)*1.8*s);}
     ctx.stroke();
   }
   
