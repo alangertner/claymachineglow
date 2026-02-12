@@ -1605,7 +1605,7 @@ function drawTitle(){
   for(let i=0;i<50;i++){const sx=seeded(i)*W,sy=seeded(i+50)*H*0.45;const br=Math.sin(frame*0.04+i*2)*0.5+0.5;if(br>0.3){ctx.fillStyle=`rgba(255,255,255,${br*0.8})`;ctx.fillRect(sx,sy,2,2);}}
   
   // === Dense Toronto skyline (TMNT-style, fills bottom half) ===
-  const skyBase=H*0.75;
+  const skyBase=H*0.68;
   
   // === TORONTO SKYLINE (viewed from lake, south-facing) ===
   
@@ -1722,7 +1722,7 @@ function drawTitle(){
   }
   
   // === TITLE TEXT — bold, colorful, TMNT-style ===
-  const cx=W/2,cy=H*0.3;
+  const cx=W/2,cy=H*0.25;
   const titleFs=Math.min(28*s,W*0.085);
   const glowFs=Math.min(48*s,W*0.15);
   ctx.textAlign='center';
@@ -1763,11 +1763,11 @@ function drawTitle(){
   // === Bottom UI ===
   if(Math.sin(frame*0.08)>0){
     ctx.font=`bold ${Math.min(16*s,W*0.055)}px "Courier New",monospace`;ctx.fillStyle='#fff';
-    ctx.textAlign='center';ctx.fillText('TAP TO START',cx,H*0.88);
+    ctx.textAlign='center';ctx.fillText('TAP TO START',cx,H*0.8);
   }
   
   // Music toggle
-  const mbY=H*0.93;
+  const mbY=H*0.9;
   ctx.textAlign='center';
   if(musicOn){
     ctx.font=`bold ${Math.min(10*s,W*0.035)}px "Courier New",monospace`;
@@ -1794,7 +1794,7 @@ let musicBtnRect={x:0,y:0,w:0,h:0};
 function updateMusicBtn(){
   const cx=W/2;
   const mbW=W*0.3,mbH=H*0.06;
-  musicBtnRect={x:cx-mbW/2,y:H*0.93-mbH/2,w:mbW,h:mbH};
+  musicBtnRect={x:cx-mbW/2,y:H*0.9-mbH/2,w:mbW,h:mbH};
 }
 
 function drawGame(){
