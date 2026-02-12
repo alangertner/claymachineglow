@@ -1788,17 +1788,15 @@ function drawTitle(){
     ctx.fillRect(sdCx+wobble-5*s,waterY+dy,10*s,1.2*s);
   }
 
-  // City light reflections — golden/white streaks from towers
+  // City light reflections — soft gradient columns (no pixel grid)
   for(const t of towers){
     const rx=W*t.x+W*t.w/2;
-    const rA=0.15+seeded(t.x*300)*0.1;
-    const rColor=t.wc==='cold'?[140,180,255]:[255,200,80];
-    for(let dy=2*s;dy<waterH*0.7;dy+=2*s){
-      const wobble=Math.sin(frame*0.02+dy*0.1+t.x*20)*3*s;
-      const fade=Math.pow(1-dy/(waterH*0.7),0.7);
-      ctx.fillStyle=`rgba(${rColor[0]},${rColor[1]},${rColor[2]},${rA*fade})`;
-      ctx.fillRect(rx+wobble-2*s,waterY+dy,4*s+seeded(t.x*100+dy)*2*s,1.2*s);
-    }
+    const rColor=t.wc==='cold'?'40,100,200':'200,160,60';
+    const colW=Math.max(W*t.w*0.5,4*s);
+    const wobble=Math.sin(frame*0.015+t.x*30)*2*s;
+    const rGrad=ctx.createLinearGradient(0,waterY,0,waterY+waterH*0.6);
+    rGrad.addColorStop(0,`rgba(${rColor},0.12)`);rGrad.addColorStop(0.5,`rgba(${rColor},0.04)`);rGrad.addColorStop(1,`rgba(${rColor},0)`);
+    ctx.fillStyle=rGrad;ctx.fillRect(rx-colW/2+wobble,waterY,colW,waterH*0.6);
   }
 
   // Gentle horizontal shimmer lines (not wave arcs)
