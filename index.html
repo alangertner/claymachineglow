@@ -1605,7 +1605,7 @@ function drawTitle(){
   for(let i=0;i<50;i++){const sx=seeded(i)*W,sy=seeded(i+50)*H*0.45;const br=Math.sin(frame*0.04+i*2)*0.5+0.5;if(br>0.3){ctx.fillStyle=`rgba(255,255,255,${br*0.8})`;ctx.fillRect(sx,sy,2,2);}}
   
   // === Dense Toronto skyline (TMNT-style, fills bottom half) ===
-  const skyBase=H*0.68;
+  const skyBase=H*0.58;
   
   // === TORONTO SKYLINE — Islands view at night ===
   const cnBase=skyBase;
@@ -1755,54 +1755,58 @@ function drawTitle(){
     }}
   }
 
-  // === Lake Ontario — dark water with vivid reflections ===
+  // === Lake Ontario — dark water with VIVID reflections like real photo ===
   const waterY=cnBase;
   const waterH=H-cnBase;
-  // Darker water base
-  drawGrad(0,waterY,W,waterH,'#060e18','#020508');
-  // Subtle blue-green tint near horizon
-  ctx.fillStyle='rgba(10,30,50,0.4)';ctx.fillRect(0,waterY,W,waterH*0.15);
+  // Very dark water base
+  drawGrad(0,waterY,W,waterH,'#040810','#010305');
 
-  // City light reflections — wider, brighter golden streaks
+  // CN Tower RED/PINK reflection — DOMINANT vertical stripe, very bright
+  // Wide soft glow column first
+  const cnRefGrad=ctx.createLinearGradient(cnX-20*s,waterY,cnX+20*s,waterY);
+  cnRefGrad.addColorStop(0,'rgba(0,0,0,0)');cnRefGrad.addColorStop(0.2,'rgba(255,20,60,0.06)');cnRefGrad.addColorStop(0.4,'rgba(255,30,80,0.12)');cnRefGrad.addColorStop(0.5,'rgba(255,40,90,0.18)');cnRefGrad.addColorStop(0.6,'rgba(255,30,80,0.12)');cnRefGrad.addColorStop(0.8,'rgba(255,20,60,0.06)');cnRefGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=cnRefGrad;ctx.fillRect(cnX-20*s,waterY,40*s,waterH);
+  // Bright broken streaks
+  for(let dy=1*s;dy<waterH;dy+=1.2*s){
+    const wobble=Math.sin(frame*0.025+dy*0.08)*4*s;
+    const fade=Math.pow(1-dy/waterH,0.6);
+    ctx.fillStyle=`rgba(255,20,70,${0.4*fade})`;
+    ctx.fillRect(cnX+wobble-3*s,waterY+dy,6*s,1.2*s);
+    ctx.fillStyle=`rgba(255,80,130,${0.2*fade})`;
+    ctx.fillRect(cnX+wobble-6*s,waterY+dy,12*s,0.8*s);
+  }
+
+  // SkyDome BLUE reflection — bright vertical stripe
+  const sdRefGrad=ctx.createLinearGradient(sdCx-16*s,waterY,sdCx+16*s,waterY);
+  sdRefGrad.addColorStop(0,'rgba(0,0,0,0)');sdRefGrad.addColorStop(0.2,'rgba(30,100,255,0.05)');sdRefGrad.addColorStop(0.4,'rgba(40,130,255,0.1)');sdRefGrad.addColorStop(0.5,'rgba(50,150,255,0.15)');sdRefGrad.addColorStop(0.6,'rgba(40,130,255,0.1)');sdRefGrad.addColorStop(0.8,'rgba(30,100,255,0.05)');sdRefGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=sdRefGrad;ctx.fillRect(sdCx-16*s,waterY,32*s,waterH*0.85);
+  // Bright broken streaks
+  for(let dy=1*s;dy<waterH*0.8;dy+=1.5*s){
+    const wobble=Math.sin(frame*0.02+dy*0.12)*4*s;
+    const fade=Math.pow(1-dy/(waterH*0.8),0.6);
+    ctx.fillStyle=`rgba(40,140,255,${0.3*fade})`;
+    ctx.fillRect(sdCx+wobble-5*s,waterY+dy,10*s,1.2*s);
+  }
+
+  // City light reflections — golden/white streaks from towers
   for(const t of towers){
     const rx=W*t.x+W*t.w/2;
-    const rA=0.12+seeded(t.x*300)*0.08;
+    const rA=0.15+seeded(t.x*300)*0.1;
     const rColor=t.wc==='cold'?[140,180,255]:[255,200,80];
-    for(let dy=2*s;dy<waterH*0.75;dy+=2*s){
-      const wobble=Math.sin(frame*0.02+dy*0.1+t.x*20)*4*s;
-      const fade=1-dy/(waterH*0.75);
+    for(let dy=2*s;dy<waterH*0.7;dy+=2*s){
+      const wobble=Math.sin(frame*0.02+dy*0.1+t.x*20)*3*s;
+      const fade=Math.pow(1-dy/(waterH*0.7),0.7);
       ctx.fillStyle=`rgba(${rColor[0]},${rColor[1]},${rColor[2]},${rA*fade})`;
-      ctx.fillRect(rx+wobble-2*s,waterY+dy,4*s+seeded(t.x*100+dy)*3*s,1.5*s);
+      ctx.fillRect(rx+wobble-2*s,waterY+dy,4*s+seeded(t.x*100+dy)*2*s,1.2*s);
     }
   }
-  // CN Tower RED/PINK reflection — VIVID, wide column like real photo
-  for(let dy=1*s;dy<waterH*0.9;dy+=1.5*s){
-    const wobble=Math.sin(frame*0.025+dy*0.08)*5*s;
-    const fade=1-dy/(waterH*0.9);
-    const bright=0.22*fade;
-    ctx.fillStyle=`rgba(255,30,80,${bright})`;
-    ctx.fillRect(cnX+wobble-4*s,waterY+dy,8*s,1.5*s);
-    // Secondary pink fringe
-    ctx.fillStyle=`rgba(255,80,140,${bright*0.4})`;
-    ctx.fillRect(cnX+wobble-7*s,waterY+dy,14*s,1*s);
-  }
-  // SkyDome BLUE reflection — VIVID, wide like real photo
-  for(let dy=1*s;dy<waterH*0.7;dy+=2*s){
-    const wobble=Math.sin(frame*0.02+dy*0.12)*5*s;
-    const fade=1-dy/(waterH*0.7);
-    const bright=0.18*fade;
-    ctx.fillStyle=`rgba(40,140,255,${bright})`;
-    ctx.fillRect(sdCx+wobble-6*s,waterY+dy,12*s,1.5*s);
-    // Secondary blue fringe
-    ctx.fillStyle=`rgba(60,160,255,${bright*0.4})`;
-    ctx.fillRect(sdCx+wobble-10*s,waterY+dy,20*s,1*s);
-  }
-  // Wave lines — slightly more visible
-  ctx.strokeStyle='rgba(60,100,160,0.12)';ctx.lineWidth=0.8*s;
-  for(let wl=0;wl<5;wl++){
-    ctx.beginPath();ctx.moveTo(0,waterY+3*s+wl*6*s);
-    for(let x=0;x<=W;x+=6){ctx.lineTo(x,waterY+3*s+wl*6*s+Math.sin(x*0.015+frame*0.025+wl)*1.8*s);}
-    ctx.stroke();
+
+  // Gentle horizontal shimmer lines (not wave arcs)
+  for(let wl=0;wl<8;wl++){
+    const wy=waterY+4*s+wl*waterH*0.1;
+    const a=0.03+Math.sin(frame*0.015+wl*1.5)*0.015;
+    ctx.fillStyle=`rgba(100,140,200,${a})`;
+    ctx.fillRect(0,wy,W,0.8*s);
   }
   
   // === TITLE TEXT — bold, colorful, TMNT-style ===
