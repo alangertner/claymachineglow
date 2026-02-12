@@ -1638,20 +1638,23 @@ function drawTitle(){
   ctx.fillStyle='#884466';
   ctx.beginPath();ctx.ellipse(cnX,skyPodY,4*s,2.5*s,0,0,Math.PI*2);ctx.fill();
   drawRect(cnX-3*s,skyPodY-0.5*s,6*s,1*s,'rgba(255,160,200,0.5)');
-  // Main pod — disc/donut shape
+  // Main pod — disc/donut shape — BIG and visible
   const podY=cnBase-cnH*0.72;
   // Pod glow (behind)
   const podGlow=Math.sin(frame*0.03)*0.06+0.18;
-  ctx.fillStyle=`rgba(255,60,140,${podGlow})`;ctx.beginPath();ctx.arc(cnX,podY,12*s,0,Math.PI*2);ctx.fill();
-  // Pod body — ellipse
+  ctx.fillStyle=`rgba(255,60,140,${podGlow})`;ctx.beginPath();ctx.arc(cnX,podY,18*s,0,Math.PI*2);ctx.fill();
+  // Pod body — wide ellipse
   ctx.fillStyle='#cc4488';
-  ctx.beginPath();ctx.ellipse(cnX,podY,5*s,3*s,0,0,Math.PI*2);ctx.fill();
-  // Pod highlight band
-  ctx.fillStyle='rgba(255,180,220,0.8)';
-  ctx.beginPath();ctx.ellipse(cnX,podY+0.5*s,4.5*s,1*s,0,0,Math.PI*2);ctx.fill();
-  // Pod underside
-  ctx.fillStyle='#993366';
-  ctx.beginPath();ctx.ellipse(cnX,podY+2*s,4*s,1.5*s,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(cnX,podY,9*s,5*s,0,0,Math.PI*2);ctx.fill();
+  // Pod highlight band (observation deck windows)
+  ctx.fillStyle='rgba(255,180,220,0.9)';
+  ctx.beginPath();ctx.ellipse(cnX,podY+1*s,8*s,1.5*s,0,0,Math.PI*2);ctx.fill();
+  // Pod top
+  ctx.fillStyle='#dd5599';
+  ctx.beginPath();ctx.ellipse(cnX,podY-1.5*s,7*s,2*s,0,0,Math.PI*2);ctx.fill();
+  // Pod underside shadow
+  ctx.fillStyle='#883060';
+  ctx.beginPath();ctx.ellipse(cnX,podY+3*s,7*s,2.5*s,0,0,Math.PI*2);ctx.fill();
   // Shaft above pod to antenna base
   drawRect(cnX-0.5*s,cnTop,1*s,cnH*0.28,'#7a5068');
   // Antenna spire — ultra thin
@@ -1663,48 +1666,49 @@ function drawTitle(){
   }
 
   // --- Rogers Centre / SkyDome — WIDE LOW dome, blue glow ---
-  const sdCx=W*0.33,sdW=W*0.13,sdH=H*0.05;
-  // Dome shape — wide flat arc
-  ctx.fillStyle='#162540';
+  const sdCx=W*0.34,sdW=W*0.15,sdH=H*0.07;
+  // Blue glow behind dome
+  const dGrad=ctx.createRadialGradient(sdCx,cnBase-sdH*0.6,sdW*0.05,sdCx,cnBase-sdH*0.6,sdW*0.7);
+  dGrad.addColorStop(0,'rgba(30,120,255,0.5)');dGrad.addColorStop(0.5,'rgba(20,80,220,0.25)');dGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=dGrad;ctx.fillRect(sdCx-sdW*0.8,cnBase-sdH*3,sdW*1.6,sdH*4.5);
+  // Dome body — solid visible shape
+  ctx.fillStyle='#1a3050';
   ctx.beginPath();ctx.moveTo(sdCx-sdW/2,cnBase);
-  ctx.quadraticCurveTo(sdCx,cnBase-sdH*2.2,sdCx+sdW/2,cnBase);
+  ctx.quadraticCurveTo(sdCx,cnBase-sdH*2.5,sdCx+sdW/2,cnBase);
   ctx.closePath();ctx.fill();
-  // Blue glow
-  const dGrad=ctx.createRadialGradient(sdCx,cnBase-sdH*0.8,sdW*0.05,sdCx,cnBase-sdH*0.8,sdW*0.55);
-  dGrad.addColorStop(0,'rgba(40,130,255,0.45)');dGrad.addColorStop(0.6,'rgba(20,80,220,0.2)');dGrad.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=dGrad;ctx.fillRect(sdCx-sdW*0.7,cnBase-sdH*3,sdW*1.4,sdH*4);
-  // Dome ribs
-  ctx.strokeStyle='rgba(60,160,255,0.4)';ctx.lineWidth=0.8*s;
-  for(let i=1;i<=4;i++){
-    const t=i/5;const ribX=sdCx-sdW/2+sdW*t;
-    const ribH=sdH*2.2*Math.sin(t*Math.PI);
+  // Blue lit surface of dome
+  ctx.fillStyle='rgba(30,100,220,0.35)';
+  ctx.beginPath();ctx.moveTo(sdCx-sdW/2+2*s,cnBase);
+  ctx.quadraticCurveTo(sdCx,cnBase-sdH*2.3,sdCx+sdW/2-2*s,cnBase);
+  ctx.closePath();ctx.fill();
+  // Dome ribs (structural lines)
+  ctx.strokeStyle='rgba(80,180,255,0.5)';ctx.lineWidth=1*s;
+  for(let i=1;i<=5;i++){
+    const t=i/6;const ribX=sdCx-sdW/2+sdW*t;
+    const ribH=sdH*2.5*Math.sin(t*Math.PI);
     ctx.beginPath();ctx.moveTo(ribX,cnBase);ctx.lineTo(ribX,cnBase-ribH);ctx.stroke();
   }
-  // Base strip
-  drawRect(sdCx-sdW/2,cnBase-2*s,sdW,2*s,'rgba(40,130,255,0.25)');
+  // Lit band at base of dome
+  drawRect(sdCx-sdW/2,cnBase-3*s,sdW,3*s,'rgba(40,140,255,0.4)');
+  // Side walls
+  drawRect(sdCx-sdW/2,cnBase-sdH*0.5,3*s,sdH*0.5,'#1a2a40');
+  drawRect(sdCx+sdW/2-3*s,cnBase-sdH*0.5,3*s,sdH*0.5,'#1a2a40');
 
   // --- Financial district + condos (W*0.42 to W*0.97) ---
   const towers=[
-    // name, x, width, height, color1, color2, windowColor
-    {x:0.42,w:0.022,h:0.22,c1:'#1a1830',c2:'#0c0c18',wc:'gold'},// condo
-    {x:0.445,w:0.038,h:0.36,c1:'#3a3858',c2:'#1a1838',wc:'gold'},// First Canadian Place (tallest, lighter)
-    {x:0.485,w:0.018,h:0.20,c1:'#141828',c2:'#0a0a18',wc:'gold'},// slim condo
-    {x:0.505,w:0.032,h:0.30,c1:'#080810',c2:'#040408',wc:'cold'},// TD Centre (very dark)
-    {x:0.54,w:0.028,h:0.28,c1:'#0a0a14',c2:'#050508',wc:'cold'},// TD Centre 2
-    {x:0.57,w:0.034,h:0.34,c1:'#3a2030',c2:'#1c0c18',wc:'gold'},// Scotia Plaza (reddish)
-    {x:0.605,w:0.02,h:0.18,c1:'#181830',c2:'#0a0a18',wc:'gold'},// condo
-    {x:0.628,w:0.03,h:0.26,c1:'#222240',c2:'#101028',wc:'gold'},// Commerce Court
-    {x:0.66,w:0.025,h:0.30,c1:'#282848',c2:'#141430',wc:'gold'},// Brookfield
-    {x:0.688,w:0.018,h:0.16,c1:'#1a1830',c2:'#0c0c18',wc:'gold'},// thin condo
-    {x:0.71,w:0.032,h:0.24,c1:'#1e1e38',c2:'#0e0e20',wc:'gold'},
-    {x:0.745,w:0.02,h:0.20,c1:'#181830',c2:'#0a0a18',wc:'gold'},// condo
-    {x:0.768,w:0.035,h:0.22,c1:'#222240',c2:'#101028',wc:'gold'},
-    {x:0.805,w:0.015,h:0.14,c1:'#1a1830',c2:'#0c0c18',wc:'gold'},// slim
-    {x:0.825,w:0.028,h:0.18,c1:'#1e1e38',c2:'#0e0e20',wc:'gold'},
-    {x:0.858,w:0.022,h:0.20,c1:'#202040',c2:'#101028',wc:'gold'},
-    {x:0.885,w:0.03,h:0.15,c1:'#181830',c2:'#0a0a18',wc:'gold'},
-    {x:0.92,w:0.02,h:0.12,c1:'#1a1830',c2:'#0c0c18',wc:'gold'},
-    {x:0.945,w:0.025,h:0.14,c1:'#1e1e38',c2:'#0e0e20',wc:'gold'},
+    {x:0.42,w:0.035,h:0.20,c1:'#1e1e38',c2:'#0e0e20',wc:'gold'},// condo
+    {x:0.46,w:0.05,h:0.38,c1:'#3a3858',c2:'#222240',wc:'gold'},// First Canadian Place (tallest, lighter)
+    {x:0.515,w:0.03,h:0.18,c1:'#181830',c2:'#0c0c18',wc:'gold'},// slim condo
+    {x:0.55,w:0.045,h:0.32,c1:'#080810',c2:'#040408',wc:'cold'},// TD Centre (very dark)
+    {x:0.60,w:0.04,h:0.28,c1:'#0a0a14',c2:'#050508',wc:'cold'},// TD Centre 2
+    {x:0.645,w:0.045,h:0.35,c1:'#3a2030',c2:'#1c0c18',wc:'gold'},// Scotia Plaza (reddish)
+    {x:0.695,w:0.03,h:0.16,c1:'#1e1e38',c2:'#0e0e20',wc:'gold'},// condo
+    {x:0.73,w:0.04,h:0.26,c1:'#222240',c2:'#101028',wc:'gold'},// Commerce Court
+    {x:0.775,w:0.035,h:0.30,c1:'#282848',c2:'#141430',wc:'gold'},// Brookfield
+    {x:0.815,w:0.035,h:0.22,c1:'#222240',c2:'#101028',wc:'gold'},
+    {x:0.855,w:0.04,h:0.18,c1:'#1e1e38',c2:'#0e0e20',wc:'gold'},
+    {x:0.90,w:0.035,h:0.15,c1:'#1a1830',c2:'#0c0c18',wc:'gold'},
+    {x:0.94,w:0.04,h:0.14,c1:'#1e1e38',c2:'#0e0e20',wc:'gold'},
   ];
   for(const t of towers){
     const bx=W*t.x,bw=W*t.w,bh=H*t.h;
@@ -1720,9 +1724,9 @@ function drawTitle(){
         if(seeded(t.x*123+wy*7+wx*3)>0.3){
           const br=seeded(t.x*123+wy*7+wx*3+77);
           if(t.wc==='cold'){
-            ctx.fillStyle=br>0.5?'rgba(180,200,255,0.35)':'rgba(140,160,220,0.15)';
+            ctx.fillStyle=br>0.5?'rgba(200,220,255,0.55)':'rgba(160,180,240,0.3)';
           } else {
-            ctx.fillStyle=br>0.6?'rgba(255,215,100,0.7)':br>0.3?'rgba(255,185,60,0.4)':'rgba(200,180,140,0.15)';
+            ctx.fillStyle=br>0.6?'rgba(255,220,100,0.8)':br>0.3?'rgba(255,190,70,0.55)':'rgba(220,200,140,0.25)';
           }
           ctx.fillRect(bx+wx,by+wy,winW,winH);
         }
