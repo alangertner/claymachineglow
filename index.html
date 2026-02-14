@@ -1,67 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Clay Machine Glow</title>
-<link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; font-family: 'Segoe UI', sans-serif; touch-action: none; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=no, viewport-fit=cover">
+  <title>Clay Machine Glow — Find the Machine</title>
 
-/* ===== TITLE SCREEN ===== */
+  <!-- SEO & Social Sharing -->
+  <meta name="description" content="A Where's Waldo–style game. Find the clay vending machine hidden in 10 beautifully illustrated Toronto scenes.">
+  <meta property="og:title" content="Clay Machine Glow">
+  <meta property="og:description" content="Can you spot the clay vending machine hidden in 10 iconic Toronto scenes? Test your eyes.">
+  <meta property="og:image" content="https://alangertner.github.io/claymachineglow/title-bg.png">
+  <meta property="og:image:width" content="1792">
+  <meta property="og:image:height" content="1024">
+  <meta property="og:url" content="https://alangertner.github.io/claymachineglow/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Clay Machine Glow">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Clay Machine Glow">
+  <meta name="twitter:description" content="Find the clay vending machine in 10 Toronto scenes 🏪">
+  <meta name="twitter:image" content="https://alangertner.github.io/claymachineglow/title-bg.png">
+  <meta name="theme-color" content="#0088bb">
+
+  <!-- Inline SVG Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23e8b800'/><text x='50' y='74' text-anchor='middle' font-size='60' font-weight='900' font-family='system-ui,sans-serif' fill='%231a1a2e'>?</text></svg>">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+
+  <style>
+/* ============================================================
+   CUSTOM PROPERTIES
+   ============================================================ */
+:root {
+  --bg-deep: #0f0e1a;
+  --bg-warm: #1a1428;
+  --blue-sky: #0099cc;
+  --blue-title: #2952a3;
+  --red-title: #d41920;
+  --red-badge: #cc1111;
+  --gold: #ffd700;
+  --gold-warm: #e8b800;
+  --gold-light: #ffecb3;
+  --cream: #fafaf7;
+  --ink: #1a1a2e;
+  --font-display: 'Lilita One', 'Trebuchet MS', sans-serif;
+  --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg-deep);
+  font-family: var(--font-body);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   LOADING SCREEN
+   ============================================================ */
+#loading-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-deep);
+  flex-direction: column; gap: 32px;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+#loading-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.loader-inner { text-align: center; width: min(320px, 80vw); }
+
+.loader-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 3px;
+  line-height: 1.15;
+  margin-bottom: 32px;
+}
+.loader-title span { display: block; }
+.loader-title .lt-clay { color: var(--blue-title); opacity: 0; animation: fadeSlideUp 0.6s 0.1s ease-out forwards; }
+.loader-title .lt-machine { color: var(--blue-title); opacity: 0; animation: fadeSlideUp 0.6s 0.25s ease-out forwards; }
+.loader-title .lt-glow { color: var(--red-title); opacity: 0; animation: fadeSlideUp 0.6s 0.4s ease-out forwards; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.loader-progress {
+  width: 100%; height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px; overflow: hidden;
+  position: relative;
+}
+.loader-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--gold-warm), var(--gold));
+  border-radius: 4px;
+  transition: width 0.3s ease-out;
+  position: relative;
+}
+.loader-bar::after {
+  content: '';
+  position: absolute; right: 0; top: -1px; bottom: -1px; width: 24px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+  border-radius: 0 4px 4px 0;
+}
+
+.loader-status {
+  margin-top: 16px;
+  font-size: 13px; color: rgba(255,255,255,0.35);
+  letter-spacing: 0.5px;
+  min-height: 20px;
+}
+
+/* ============================================================
+   TITLE SCREEN
+   ============================================================ */
 #title-screen {
   position: fixed; inset: 0; z-index: 500;
   display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
-  background: #0099cc;
+  overflow: hidden; background: var(--blue-sky);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
 }
-.title-bg {
-  position: absolute; inset: -40px;
-  background: url('title-bg.png') center 40%;
-  background-size: cover;
+#title-screen.visible { opacity: 1; visibility: visible; }
+#title-screen.exit {
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.7s ease 0.1s, visibility 0.7s ease 0.1s;
 }
 
-/* ---- White postcard ---- */
+.title-bg {
+  position: absolute; inset: -60px;
+  background-size: cover; background-position: center 40%;
+  will-change: transform;
+  transition: transform 0.15s ease-out;
+}
+
+/* Postcard */
 .title-card {
   position: relative; z-index: 2;
-  background: #fafaf7;
-  padding: 18px 30px 18px 30px;
-  transform: rotate(8deg);
+  background: var(--cream);
+  padding: 22px 32px 20px;
+  transform: rotate(7deg);
   box-shadow:
-    -3px 5px 10px rgba(0,0,0,0.25),
-    -1px 2px 4px rgba(0,0,0,0.12),
-    0 0 0 1px rgba(0,0,0,0.04);
-  max-width: 420px; width: 80vw;
+    0 1px 1px rgba(0,0,0,0.06),
+    0 2px 4px rgba(0,0,0,0.08),
+    0 6px 16px rgba(0,0,0,0.14),
+    0 16px 40px rgba(0,0,0,0.18),
+    0 0 0 1px rgba(0,0,0,0.03);
+  max-width: 420px; width: 82vw;
   text-align: center;
-  /* Subtle paper texture */
+  border-radius: 2px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23fafaf7'/%3E%3Crect x='0' y='0' width='1' height='1' fill='%23f5f5f0' opacity='0.3'/%3E%3C/svg%3E");
 }
 
-/* ---- Postmark stamps ---- */
+/* Postmark stamps */
 .title-stamps {
-  display: flex; justify-content: center; align-items: flex-end; gap: 4px;
-  margin-bottom: 8px;
+  display: flex; justify-content: center; align-items: flex-end; gap: 6px;
+  margin-bottom: 12px;
 }
 .stamp {
-  width: 66px; height: 66px;
-  position: relative;
-  opacity: 0.6;
+  width: 62px; height: 62px;
+  opacity: 0.55;
+  transition: opacity 0.3s;
 }
 .stamp:nth-child(1) { transform: rotate(-6deg); }
 .stamp:nth-child(2) { transform: rotate(3deg); }
 .stamp:nth-child(3) { transform: rotate(-2deg); }
 .stamp svg { width: 100%; height: 100%; }
 
-/* ---- Postage stamp (4th) ---- */
+/* Postage stamp */
 .stamp-postage {
-  width: 68px; height: 80px;
+  width: 66px; height: 78px;
   background: #d8e4f8;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  position: relative;
   padding: 4px;
-  /* Perforated edge via radial gradient mask */
   -webkit-mask-image: radial-gradient(circle 3px at 3px 0, transparent 2.5px, black 3px),
     radial-gradient(circle 3px at 3px 0, transparent 2.5px, black 3px),
     radial-gradient(circle 3px at 0 3px, transparent 2.5px, black 3px),
@@ -74,143 +199,464 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; f
   mask-composite: add;
   transform: rotate(5deg);
 }
-.stamp-postage img {
-  width: 50px; height: 54px;
-  object-fit: contain;
-}
+.stamp-postage img { width: 48px; height: 52px; object-fit: contain; }
 .stamp-postage-top,
 .stamp-postage-bottom {
-  font-family: 'Lilita One', sans-serif;
-  font-size: 6px;
-  color: #2a3a6a;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  line-height: 1;
+  font-family: var(--font-display);
+  font-size: 5.5px; color: #2a3a6a;
+  text-transform: uppercase; letter-spacing: 0.8px; line-height: 1;
 }
 
-/* ---- Title typography ---- */
+/* Title typography */
 .title-line1 {
-  font-family: 'Lilita One', sans-serif;
-  font-size: clamp(32px, 8.5vw, 56px);
-  color: #2952a3;
-  line-height: 1;
-  letter-spacing: 2px;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 9vw, 58px);
+  color: var(--blue-title);
+  line-height: 1; letter-spacing: 3px;
+  margin-bottom: 2px;
 }
 .title-line2 {
-  font-family: 'Lilita One', sans-serif;
-  font-size: clamp(36px, 9.5vw, 64px);
-  color: #2952a3;
-  line-height: 0.95;
-  letter-spacing: 2px;
+  font-family: var(--font-display);
+  font-size: clamp(38px, 10vw, 66px);
+  color: var(--blue-title);
+  line-height: 0.95; letter-spacing: 3px;
+  margin-bottom: 2px;
 }
 .title-line3 {
-  font-family: 'Lilita One', sans-serif;
-  font-size: clamp(44px, 12vw, 80px);
-  color: #d41920;
-  line-height: 0.95;
-  letter-spacing: 3px;
+  font-family: var(--font-display);
+  font-size: clamp(48px, 13vw, 84px);
+  color: var(--red-title);
+  line-height: 0.95; letter-spacing: 4px;
 }
 
-/* ---- Author strip ---- */
+/* Author strip */
 .title-author {
-  margin-top: 10px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
 }
-.title-author-line { height: 2.5px; width: 32px; background: #222; }
+.title-author-line { height: 2.5px; width: 36px; background: #222; border-radius: 1px; }
 .title-author-name {
-  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
-  font-size: 12px; font-weight: 900;
-  color: #222; letter-spacing: 3.5px;
+  font-family: var(--font-body);
+  font-size: 11px; font-weight: 900;
+  color: #222; letter-spacing: 4px;
   text-transform: uppercase;
 }
 
-/* ---- Yellow O circle — random position on page ---- */
+/* Yellow circle */
 .title-yellow-circle {
   position: fixed;
   width: 68px; height: 68px;
-  border: 6px solid #e8b800;
-  border-radius: 50%;
-  z-index: 3;
+  border: 6px solid var(--gold-warm);
+  border-radius: 50%; z-index: 3;
   display: flex; align-items: center; justify-content: center;
   background: transparent;
+  animation: gentleFloat 4s ease-in-out infinite;
 }
-.title-yellow-circle img {
-  width: 42px; height: 42px;
-  object-fit: contain;
+.title-yellow-circle img { width: 42px; height: 42px; object-fit: contain; }
+
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
-/* ---- Red badge — top left of COVER ---- */
+/* Red badge */
 .title-badge {
   position: absolute;
-  top: 10px; left: 10px;
+  top: calc(var(--safe-top) + 14px); left: calc(var(--safe-left) + 14px);
   width: 62px; height: 62px;
-  border-radius: 50%;
-  background: #cc1111;
+  border-radius: 50%; background: var(--red-badge);
   border: 3px solid #fff;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  box-shadow: 1px 2px 6px rgba(0,0,0,0.35);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 1px 2px 8px rgba(0,0,0,0.35);
   z-index: 10;
 }
 .title-badge svg { width: 100%; height: 100%; }
 
-/* ---- Start button ---- */
+/* Start button */
 #start-btn {
   position: relative; z-index: 3;
-  margin-top: 22px;
-  padding: 10px 44px;
-  font-family: 'Lilita One', sans-serif;
-  font-size: 26px;
-  letter-spacing: 2px;
-  background: #e8b800;
-  color: #1a1a2e;
-  border: 3px solid #222;
-  border-radius: 50px;
+  margin-top: 24px; padding: 12px 48px;
+  font-family: var(--font-display);
+  font-size: 26px; letter-spacing: 3px;
+  background: var(--gold-warm); color: var(--ink);
+  border: 3px solid #222; border-radius: 50px;
   cursor: pointer;
   box-shadow: 3px 4px 0 #222;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s;
+  outline: none;
 }
-#start-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #222;
+#start-btn:hover { background: var(--gold); }
+#start-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #222; }
+#start-btn:focus-visible { box-shadow: 3px 4px 0 #222, 0 0 0 3px rgba(255,255,255,0.6); }
+#start-btn .btn-sub {
+  display: block; font-family: var(--font-body);
+  font-size: 10px; letter-spacing: 2px;
+  font-weight: 700; opacity: 0.5; margin-top: 2px;
 }
 
-#game-container { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: grab; }
+.title-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+/* ============================================================
+   HUD
+   ============================================================ */
+#hud {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: calc(var(--safe-top) + 12px) calc(var(--safe-right) + 16px) 16px calc(var(--safe-left) + 16px);
+  background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+  pointer-events: none;
+  opacity: 0; transition: opacity 0.5s ease;
+}
+#hud.visible { opacity: 1; }
+
+.hud-left { display: flex; flex-direction: column; gap: 6px; }
+.scene-name {
+  color: #fff; font-size: 16px; font-weight: 700;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  letter-spacing: 0.5px;
+}
+.scene-counter {
+  color: rgba(255,255,255,0.5); font-size: 11px;
+  font-weight: 600; letter-spacing: 1px;
+}
+
+.scene-dots {
+  display: flex; gap: 5px;
+}
+.scene-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: background 0.4s ease, transform 0.3s ease;
+}
+.scene-dot.done { background: var(--gold); transform: scale(1); }
+.scene-dot.current { background: #fff; animation: dotPulse 1.5s ease-in-out infinite; }
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+.hud-right { text-align: right; }
+.timer {
+  color: var(--gold); font-size: 22px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  font-family: var(--font-body);
+}
+
+/* ============================================================
+   GAME CONTAINER
+   ============================================================ */
+#game-container {
+  position: relative; width: 100%; height: 100%;
+  overflow: hidden; cursor: crosshair;
+  opacity: 0; transition: opacity 0.5s ease;
+}
+#game-container.visible { opacity: 1; }
 #game-container.dragging { cursor: grabbing; }
 
-#scene-canvas { position: absolute; top: 0; left: 0; image-rendering: auto; }
+#scene-canvas {
+  position: absolute; top: 0; left: 0;
+  image-rendering: auto; will-change: transform;
+}
 
-#hud { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: none; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%); pointer-events: none; }
-#hud .scene-name { color: #fff; font-size: 18px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-#hud .timer { color: #ffd700; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+/* ============================================================
+   TRANSITION OVERLAY
+   ============================================================ */
+#transition-overlay {
+  position: fixed; inset: 0; z-index: 150;
+  background: var(--cream);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+#transition-overlay.active { opacity: 1; }
 
-#hint-btn { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: none; background: rgba(0,0,0,0.5); color: #ffd700; border: 2px solid #ffd700; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer; }
+/* ============================================================
+   CONFETTI CANVAS
+   ============================================================ */
+#confetti-canvas {
+  position: fixed; inset: 0; z-index: 180;
+  pointer-events: none;
+  width: 100%; height: 100%;
+}
 
-.click-feedback { position: absolute; pointer-events: none; z-index: 50; animation: feedbackFade 0.6s ease-out forwards; }
-@keyframes feedbackFade { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+/* ============================================================
+   HINT VIGNETTE
+   ============================================================ */
+#hint-vignette {
+  position: fixed; inset: 0; z-index: 90;
+  pointer-events: none; opacity: 0;
+  transition: opacity 1.5s ease;
+}
+#hint-vignette.active { opacity: 1; }
 
-.found-pulse { position: absolute; pointer-events: none; z-index: 50; border: 3px solid #ffd700; border-radius: 50%; animation: pulse 0.8s ease-out forwards; }
-@keyframes pulse { 0% { opacity: 1; transform: scale(1); box-shadow: 0 0 20px #ffd700; } 50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 40px #ffd700; } 100% { opacity: 0; transform: scale(1.5); } }
+/* ============================================================
+   FEEDBACK EFFECTS
+   ============================================================ */
+.miss-ripple {
+  position: absolute; pointer-events: none; z-index: 50;
+  border: 2px solid rgba(255,80,80,0.6);
+  border-radius: 50%;
+  animation: missRipple 0.6s ease-out forwards;
+}
+@keyframes missRipple {
+  0%   { opacity: 0.8; transform: scale(0.3); }
+  100% { opacity: 0;   transform: scale(1.2); }
+}
 
-#found-banner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; color: #ffd700; font-size: 64px; font-weight: 900; text-shadow: 0 0 30px rgba(255,215,0,0.8), 0 4px 8px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-#found-banner.show { opacity: 1; animation: bannerPop 1.2s ease-out; }
-@keyframes bannerPop { 0% { transform: translate(-50%,-50%) scale(0.5); } 30% { transform: translate(-50%,-50%) scale(1.2); } 100% { transform: translate(-50%,-50%) scale(1); } }
+.miss-x {
+  position: absolute; pointer-events: none; z-index: 51;
+  color: rgba(255,80,80,0.7); font-size: 20px; font-weight: 900;
+  text-align: center; line-height: 1;
+  animation: missX 0.5s ease-out forwards;
+}
+@keyframes missX {
+  0%   { opacity: 1; transform: scale(0.5) rotate(-15deg); }
+  40%  { opacity: 1; transform: scale(1.1) rotate(5deg); }
+  100% { opacity: 0; transform: scale(0.8) rotate(0deg) translateY(-8px); }
+}
 
-#end-screen { position: fixed; inset: 0; z-index: 300; background: rgba(10,10,30,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
-#end-screen h1 { font-size: 48px; color: #ffd700; margin-bottom: 20px; }
-#end-screen .times { font-size: 20px; line-height: 2; }
-#end-screen .total { font-size: 28px; color: #ffd700; margin-top: 20px; font-weight: 700; }
-#end-screen button { margin-top: 30px; padding: 12px 40px; font-size: 20px; background: #ffd700; color: #1a1a2e; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; }
-</style>
+.found-ring {
+  position: absolute; pointer-events: none; z-index: 50;
+  border: 4px solid var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(255,215,0,0.4), inset 0 0 20px rgba(255,215,0,0.1);
+  animation: foundRing 1s ease-out forwards;
+}
+@keyframes foundRing {
+  0%   { opacity: 1; transform: scale(0.8); }
+  50%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+.found-ring-inner {
+  position: absolute; pointer-events: none; z-index: 50;
+  border: 2px solid var(--gold-light);
+  border-radius: 50%;
+  animation: foundRingInner 0.8s 0.1s ease-out forwards;
+  opacity: 0;
+}
+@keyframes foundRingInner {
+  0%   { opacity: 0.8; transform: scale(0.5); }
+  100% { opacity: 0;   transform: scale(1.6); }
+}
+
+/* ============================================================
+   FOUND BANNER
+   ============================================================ */
+#found-banner {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  z-index: 200; pointer-events: none;
+  font-family: var(--font-display);
+  color: var(--gold); font-size: clamp(48px, 14vw, 80px);
+  letter-spacing: 6px;
+  text-shadow:
+    0 0 40px rgba(255,215,0,0.5),
+    0 0 80px rgba(255,215,0,0.2),
+    0 4px 8px rgba(0,0,0,0.4),
+    -2px -2px 0 rgba(0,0,0,0.15);
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+#found-banner.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ============================================================
+   END SCREEN
+   ============================================================ */
+#end-screen {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(10,8,20,0.92);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#end-screen.visible { display: flex; opacity: 1; }
+
+.end-card {
+  background: linear-gradient(145deg, rgba(30,25,50,0.95), rgba(20,18,35,0.98));
+  border: 1px solid rgba(255,215,0,0.15);
+  border-radius: 20px;
+  padding: 36px 32px 28px;
+  max-width: 380px; width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(255,215,0,0.05);
+  transform: translateY(20px);
+  animation: endCardIn 0.6s 0.2s ease-out forwards;
+  opacity: 0;
+}
+@keyframes endCardIn {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.end-emoji { font-size: 48px; margin-bottom: 8px; }
+.end-title {
+  font-family: var(--font-display);
+  font-size: 36px; color: var(--gold);
+  letter-spacing: 2px; margin-bottom: 24px;
+}
+
+.end-times {
+  text-align: left; margin: 0 auto;
+  max-width: 300px;
+}
+.end-time-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 14px; color: rgba(255,255,255,0.7);
+}
+.end-time-row:last-child { border-bottom: none; }
+.end-time-val {
+  font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,0.9); font-weight: 600;
+}
+
+.end-total {
+  margin-top: 20px; padding-top: 16px;
+  border-top: 2px solid rgba(255,215,0,0.2);
+  font-size: 28px; font-weight: 700;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-body);
+}
+.end-total-label {
+  font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 4px;
+}
+
+.end-actions {
+  display: flex; gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+}
+.end-actions button {
+  padding: 12px 28px; font-size: 16px;
+  font-weight: 700; border: none; border-radius: 12px;
+  cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  outline: none; font-family: var(--font-body);
+}
+.end-actions button:active { transform: scale(0.96); }
+.end-actions button:focus-visible { box-shadow: 0 0 0 3px rgba(255,215,0,0.5); }
+
+#share-btn {
+  background: rgba(255,255,255,0.1); color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+#share-btn:hover { background: rgba(255,255,255,0.15); }
+
+#replay-btn {
+  background: var(--gold-warm); color: var(--ink);
+}
+#replay-btn:hover { background: var(--gold); }
+
+.end-share-confirm {
+  margin-top: 12px; font-size: 13px;
+  color: var(--gold); opacity: 0;
+  transition: opacity 0.3s;
+  min-height: 20px;
+}
+.end-share-confirm.show { opacity: 1; }
+
+/* ============================================================
+   FLOATING BUTTONS
+   ============================================================ */
+.float-btn {
+  position: fixed; z-index: 100;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  color: #fff; font-size: 18px;
+  display: none; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s, border-color 0.2s;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.float-btn.visible { display: flex; }
+.float-btn:hover { background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.35); }
+.float-btn:active { transform: scale(0.92); }
+.float-btn:focus-visible { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.3); }
+
+#sound-btn {
+  bottom: calc(var(--safe-bottom) + 20px);
+  left: calc(var(--safe-left) + 16px);
+}
+#hint-btn {
+  bottom: calc(var(--safe-bottom) + 20px);
+  right: calc(var(--safe-right) + 16px);
+  font-family: var(--font-display);
+  font-size: 20px; color: var(--gold);
+  border-color: rgba(255,215,0,0.3);
+}
+#hint-btn:hover { border-color: var(--gold); background: rgba(255,215,0,0.1); }
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   SMALL SCREEN TWEAKS
+   ============================================================ */
+@media (max-width: 480px) {
+  .title-card { padding: 16px 20px 14px; }
+  .title-stamps { gap: 3px; }
+  .stamp { width: 50px; height: 50px; }
+  .stamp-postage { width: 54px; height: 66px; }
+  .stamp-postage img { width: 40px; height: 44px; }
+  .title-author-name { font-size: 10px; letter-spacing: 3px; }
+  #start-btn { padding: 10px 36px; font-size: 22px; }
+  .end-card { padding: 28px 20px 22px; }
+  .end-title { font-size: 28px; }
+}
+  </style>
 </head>
 <body>
 
-<!-- TITLE SCREEN -->
-<div id="title-screen">
-  <div class="title-bg"></div>
+<!-- ============================================================
+     LOADING SCREEN
+     ============================================================ -->
+<div id="loading-screen" role="status" aria-label="Loading game assets">
+  <div class="loader-inner">
+    <div class="loader-title" aria-hidden="true">
+      <span class="lt-clay">CLAY</span>
+      <span class="lt-machine">MACHINE</span>
+      <span class="lt-glow">GLOW</span>
+    </div>
+    <div class="loader-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="loader-bar" id="loader-bar"></div>
+    </div>
+    <p class="loader-status" id="loader-status">Preparing scenes…</p>
+  </div>
+</div>
 
-  <!-- Red badge — top left of COVER (like "Where's Waldo? Book One") -->
-  <div class="title-badge">
+<!-- ============================================================
+     TITLE SCREEN
+     ============================================================ -->
+<div id="title-screen" role="dialog" aria-label="Game start screen">
+  <div class="title-bg" id="title-bg"></div>
+
+  <div class="title-badge" aria-hidden="true">
     <svg viewBox="0 0 62 62">
       <circle cx="31" cy="31" r="28" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
       <text x="31" y="18" text-anchor="middle" font-family="'Lilita One',sans-serif" font-size="6" fill="#fff" letter-spacing="0.5">CLAY MACHINE</text>
@@ -219,14 +665,13 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; f
     </svg>
   </div>
 
-  <!-- Yellow circle with machine — randomly placed in crowd -->
-  <div class="title-yellow-circle" id="title-yellow-circle"><img src="machine-sprite.png" alt=""></div>
+  <div class="title-yellow-circle" id="title-yellow-circle" aria-hidden="true">
+    <img src="machine-sprite.png" alt="" width="42" height="42" loading="eager">
+  </div>
 
-  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+  <div class="title-content">
     <div class="title-card">
-
-      <!-- Postmark stamps row -->
-      <div class="title-stamps">
+      <div class="title-stamps" aria-hidden="true">
         <div class="stamp">
           <svg viewBox="0 0 80 80">
             <circle cx="40" cy="40" r="37" fill="none" stroke="#555" stroke-width="2"/>
@@ -266,53 +711,84 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; f
             <text x="40" y="42" text-anchor="middle" font-size="6" fill="#444" font-weight="800" font-family="sans-serif">DISTILLERY</text>
           </svg>
         </div>
-        <!-- 4th: Rectangular postage stamp with machine portrait -->
         <div class="stamp-postage">
           <div class="stamp-postage-top">FIND THE</div>
-          <img src="machine-sprite.png" alt="">
+          <img src="machine-sprite.png" alt="" width="48" height="52" loading="eager">
           <div class="stamp-postage-bottom">MACHINE</div>
         </div>
       </div>
 
-      <!-- Title text -->
-      <div class="title-line1">CLAY</div>
-      <div class="title-line2">MACHINE</div>
-      <div class="title-line3">GLOW</div>
+      <h1>
+        <div class="title-line1">CLAY</div>
+        <div class="title-line2">MACHINE</div>
+        <div class="title-line3">GLOW</div>
+      </h1>
 
-      <!-- Author -->
       <div class="title-author">
-        <div class="title-author-line"></div>
+        <span class="title-author-line" aria-hidden="true"></span>
         <span class="title-author-name">Alan Gertner</span>
-        <div class="title-author-line"></div>
+        <span class="title-author-line" aria-hidden="true"></span>
       </div>
-
     </div>
-    <button id="start-btn">START</button>
+
+    <button id="start-btn" aria-label="Start game">
+      START
+      <span class="btn-sub">10 SCENES</span>
+    </button>
   </div>
 </div>
 
-<div id="hud">
-  <div class="scene-name" id="scene-label"></div>
-  <div class="timer" id="timer">0.0s</div>
+<!-- ============================================================
+     GAME UI
+     ============================================================ -->
+<header id="hud" role="banner" aria-label="Game status">
+  <div class="hud-left">
+    <span class="scene-name" id="scene-label" aria-live="polite"></span>
+    <div class="scene-dots" id="scene-dots" role="group" aria-label="Scene progress"></div>
+  </div>
+  <div class="hud-right">
+    <span class="timer" id="timer" aria-label="Time elapsed">0.0s</span>
+  </div>
+</header>
+
+<main id="game-container" role="application" aria-label="Find the clay vending machine in this scene">
+  <canvas id="scene-canvas" aria-hidden="true"></canvas>
+</main>
+
+<div id="transition-overlay" aria-hidden="true"></div>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
+<div id="hint-vignette" aria-hidden="true"></div>
+<div id="found-banner" role="alert" aria-live="assertive">FOUND!</div>
+
+<div id="end-screen" role="dialog" aria-label="Game results" aria-modal="true">
+  <div class="end-card">
+    <div class="end-emoji" aria-hidden="true">🎉</div>
+    <h1 class="end-title">All Found!</h1>
+    <div class="end-times" id="end-times"></div>
+    <div class="end-total">
+      <div class="end-total-label">Total Time</div>
+      <div id="end-total-val"></div>
+    </div>
+    <div class="end-actions">
+      <button id="share-btn" aria-label="Copy results to clipboard">📋 Share</button>
+      <button id="replay-btn" aria-label="Play again">↻ Play Again</button>
+    </div>
+    <p class="end-share-confirm" id="share-confirm" aria-live="polite"></p>
+  </div>
 </div>
 
-<div id="game-container">
-  <canvas id="scene-canvas"></canvas>
-</div>
+<button id="sound-btn" class="float-btn" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+<button id="hint-btn" class="float-btn" aria-label="Get a hint" title="Get a hint">?</button>
 
-<button id="hint-btn" title="Hint">?</button>
-<div id="found-banner">FOUND!</div>
-
-<div id="end-screen">
-  <h1>🎉 All Found!</h1>
-  <div class="times" id="end-times"></div>
-  <div class="total" id="end-total"></div>
-  <button onclick="restartGame()">Play Again</button>
-</div>
-
+<!-- ============================================================
+     GAME ENGINE
+     ============================================================ -->
 <script>
-// Vending machine coordinates baked into the DALL-E generated images
-// vendingX/vendingY = center of vending machine as fraction of image dimensions
+'use strict';
+
+/* ============================================================
+   SCENE DATA — coordinates baked into DALL-E generated images
+   ============================================================ */
 const SCENES = [
   { img: 'scenes/scene1.png?v=6',  name: 'Kensington Market',      vendingX: 0.370, vendingY: 0.420 },
   { img: 'scenes/scene2.png?v=6',  name: 'Nathan Phillips Square', vendingX: 0.300, vendingY: 0.420 },
@@ -326,43 +802,384 @@ const SCENES = [
   { img: 'scenes/scene10.png?v=5', name: 'Gardiner Museum',        vendingX: 0.420, vendingY: 0.350 },
 ];
 
-const HIT_RADIUS = 70; // generous hitbox radius in image pixels
-let currentScene = 0, times = [], sceneStart = 0;
+const HIT_RADIUS = 70;
+const SCENE_EMOJIS = ['🏘️','🏛️','🏙️','🧺','🌳','🏝️','🏮','🚇','🏚️','🏺'];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let currentScene = 0;
+let times = [];
+let sceneStart = 0;
 let canvas, ctx, container;
 let imgObj = null, imgLoaded = false;
 let panX = 0, panY = 0, scale = 1, minScale = 1;
 let dragging = false, dragStartX, dragStartY, panStartX, panStartY;
-let lastPinchDist = 0, found = false;
+let lastPinchDist = 0;
+let found = false;
+let gameStarted = false;
+let soundEnabled = true;
+let hintCount = 0;
+let preloadedImages = {};
+let confettiParticles = [];
+let confettiActive = false;
+let confettiCanvas, confettiCtx;
 
-function init() {
-  canvas = document.getElementById('scene-canvas');
-  ctx = canvas.getContext('2d');
-  container = document.getElementById('game-container');
-  loadScene(0);
-  setupInput();
-  requestAnimationFrame(tick);
+/* ============================================================
+   AUDIO ENGINE — Web Audio API, no external files
+   ============================================================ */
+let audioCtx = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch(e) { /* Audio not supported */ }
 }
 
-function loadScene(idx) {
+function playTone(freq, duration, vol, type, detune) {
+  if (!audioCtx || !soundEnabled) return;
+  try {
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    if (detune) osc.detune.value = detune;
+    gain.gain.setValueAtTime(vol || 0.15, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + duration);
+  } catch(e) {}
+}
+
+function playNoise(duration, vol, filterFreq, filterType) {
+  if (!audioCtx || !soundEnabled) return;
+  try {
+    const t = audioCtx.currentTime;
+    const bufferSize = audioCtx.sampleRate * duration;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = filterType || 'lowpass';
+    filter.frequency.value = filterFreq || 800;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(vol || 0.05, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    source.start(t);
+    source.stop(t + duration);
+  } catch(e) {}
+}
+
+function sfxFind() {
+  // Bright ascending chime
+  playTone(523, 0.3, 0.18, 'sine');     // C5
+  setTimeout(() => playTone(659, 0.25, 0.15, 'sine'), 80);  // E5
+  setTimeout(() => playTone(784, 0.35, 0.18, 'sine'), 160);  // G5
+  setTimeout(() => playTone(1047, 0.5, 0.12, 'triangle'), 260); // C6
+}
+
+function sfxMiss() {
+  playNoise(0.12, 0.04, 200, 'lowpass');
+  playTone(150, 0.1, 0.06, 'sine');
+}
+
+function sfxTransition() {
+  // Whoosh: filtered noise sweep
+  if (!audioCtx || !soundEnabled) return;
+  try {
+    const t = audioCtx.currentTime;
+    const dur = 0.5;
+    const bufferSize = audioCtx.sampleRate * dur;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.Q.value = 2;
+    filter.frequency.setValueAtTime(200, t);
+    filter.frequency.exponentialRampToValueAtTime(3000, t + 0.15);
+    filter.frequency.exponentialRampToValueAtTime(200, t + dur);
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.08, t);
+    gain.gain.setValueAtTime(0.08, t + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    source.start(t);
+    source.stop(t + dur);
+  } catch(e) {}
+}
+
+function sfxClick() {
+  playTone(900, 0.04, 0.08, 'sine');
+}
+
+function sfxCelebrate() {
+  // Happy ascending arpeggio
+  const notes = [523, 659, 784, 1047, 1319];
+  notes.forEach((f, i) => {
+    setTimeout(() => playTone(f, 0.4, 0.12, 'triangle'), i * 100);
+  });
+}
+
+/* ============================================================
+   CONFETTI SYSTEM
+   ============================================================ */
+const CONFETTI_COLORS = ['#FFD700','#FFC107','#FF9800','#FFECB3','#FFFFFF','#FFB74D','#FFF176'];
+
+function spawnConfetti(cx, cy, count) {
+  confettiParticles = [];
+  for (let i = 0; i < (count || 90); i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 8;
+    confettiParticles.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+      vy: Math.sin(angle) * speed * (0.5 + Math.random()) - 4,
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 15,
+      w: 4 + Math.random() * 6,
+      h: 3 + Math.random() * 4,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      opacity: 1,
+      gravity: 0.15 + Math.random() * 0.1,
+      drag: 0.97 + Math.random() * 0.02,
+      life: 1,
+    });
+  }
+  confettiActive = true;
+}
+
+function updateConfetti() {
+  if (!confettiActive) return;
+  confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  let alive = 0;
+  for (const p of confettiParticles) {
+    p.vx *= p.drag;
+    p.vy *= p.drag;
+    p.vy += p.gravity;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rotation += p.rotationSpeed;
+    p.life -= 0.012;
+    p.opacity = Math.max(0, p.life);
+    if (p.opacity <= 0) continue;
+    alive++;
+    confettiCtx.save();
+    confettiCtx.translate(p.x, p.y);
+    confettiCtx.rotate(p.rotation * Math.PI / 180);
+    confettiCtx.globalAlpha = p.opacity;
+    confettiCtx.fillStyle = p.color;
+    confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    confettiCtx.restore();
+  }
+  if (alive === 0) {
+    confettiActive = false;
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  }
+}
+
+function resizeConfettiCanvas() {
+  confettiCanvas.width = window.innerWidth * devicePixelRatio;
+  confettiCanvas.height = window.innerHeight * devicePixelRatio;
+  confettiCanvas.style.width = window.innerWidth + 'px';
+  confettiCanvas.style.height = window.innerHeight + 'px';
+  confettiCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+
+/* ============================================================
+   IMAGE PRELOADER with progress
+   ============================================================ */
+function loadImageWithProgress(url, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'blob';
+    xhr.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(e.loaded, e.total);
+      }
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const blob = xhr.response;
+        const objectURL = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = objectURL;
+      } else {
+        // Fallback: try direct image load
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+      }
+    };
+    xhr.onerror = () => {
+      // Fallback
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
+    };
+    xhr.send();
+  });
+}
+
+function loadImageSimple(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+/* ============================================================
+   PRELOAD ORCHESTRATION
+   ============================================================ */
+async function preloadInitial() {
+  const loaderBar = document.getElementById('loader-bar');
+  const loaderStatus = document.getElementById('loader-status');
+  const progressEl = document.querySelector('.loader-progress');
+
+  let totalBytes = 0, loadedBytes = 0;
+  // Estimate sizes (we'll update as real headers come in)
+  const estimates = { 'title-bg.png': 3500000, 'machine-sprite.png': 1200000 };
+  estimates[SCENES[0].img] = 4000000;
+  totalBytes = Object.values(estimates).reduce((a, b) => a + b, 0);
+
+  const trackers = {};
+  function updateBar() {
+    let loaded = 0;
+    for (const k in trackers) loaded += trackers[k];
+    const pct = Math.min(100, (loaded / totalBytes) * 100);
+    loaderBar.style.width = pct + '%';
+    progressEl.setAttribute('aria-valuenow', Math.round(pct));
+  }
+
+  function makeTracker(key, estimate) {
+    trackers[key] = 0;
+    return (loaded, total) => {
+      if (total > 0 && total !== estimate) {
+        totalBytes = totalBytes - estimate + total;
+        estimates[key] = total;
+      }
+      trackers[key] = loaded;
+      updateBar();
+    };
+  }
+
+  loaderStatus.textContent = 'Loading artwork…';
+
+  try {
+    const [titleBg, machineSprite, scene1] = await Promise.all([
+      loadImageWithProgress('title-bg.png', makeTracker('title-bg.png', estimates['title-bg.png'])),
+      loadImageWithProgress('machine-sprite.png', makeTracker('machine-sprite.png', estimates['machine-sprite.png'])),
+      loadImageWithProgress(SCENES[0].img, makeTracker(SCENES[0].img, estimates[SCENES[0].img])),
+    ]);
+
+    preloadedImages['title-bg.png'] = titleBg;
+    preloadedImages['machine-sprite.png'] = machineSprite;
+    preloadedImages[SCENES[0].img] = scene1;
+  } catch(e) {
+    // Continue even if tracking fails — images may still load via fallback
+    console.warn('Preload tracking error, continuing:', e);
+  }
+
+  loaderBar.style.width = '100%';
+  loaderStatus.textContent = 'Ready!';
+
+  // Brief pause at 100% so user sees completion
+  await new Promise(r => setTimeout(r, 400));
+}
+
+function preloadNextScene(idx) {
+  if (idx >= SCENES.length) return;
+  const url = SCENES[idx].img;
+  if (preloadedImages[url]) return;
+  loadImageSimple(url).then(img => {
+    preloadedImages[url] = img;
+  }).catch(() => {});
+}
+
+/* ============================================================
+   SCENE DOTS (progress indicator)
+   ============================================================ */
+function buildSceneDots() {
+  const dotsEl = document.getElementById('scene-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < SCENES.length; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'scene-dot';
+    if (i < currentScene) dot.classList.add('done');
+    if (i === currentScene) dot.classList.add('current');
+    dot.setAttribute('aria-label', `Scene ${i + 1}: ${SCENES[i].name}${i < currentScene ? ' (found)' : ''}`);
+    dotsEl.appendChild(dot);
+  }
+}
+
+/* ============================================================
+   SCENE MANAGEMENT
+   ============================================================ */
+function loadScene(idx, skipTransition) {
   currentScene = idx;
   found = false;
   imgLoaded = false;
+  hintCount = 0;
+
+  // Clear hint vignette
+  const hintVig = document.getElementById('hint-vignette');
+  hintVig.classList.remove('active');
+  hintVig.style.background = '';
+
   document.getElementById('scene-label').textContent = SCENES[idx].name;
+  buildSceneDots();
   sceneStart = performance.now();
-  imgObj = new Image();
-  imgObj.onload = () => {
-    imgLoaded = true;
-    canvas.width = imgObj.width;
-    canvas.height = imgObj.height;
-    const sx = container.clientWidth / imgObj.width;
-    const sy = container.clientHeight / imgObj.height;
-    minScale = Math.max(sx, sy);
-    scale = minScale;
-    panX = (container.clientWidth - imgObj.width * scale) / 2;
-    panY = (container.clientHeight - imgObj.height * scale) / 2;
-    clampPan();
-  };
-  imgObj.src = SCENES[idx].img;
+
+  const url = SCENES[idx].img;
+  if (preloadedImages[url]) {
+    imgObj = preloadedImages[url];
+    onSceneImageLoaded();
+  } else {
+    imgObj = new Image();
+    imgObj.onload = onSceneImageLoaded;
+    imgObj.src = url;
+  }
+
+  // Preload next
+  preloadNextScene(idx + 1);
+}
+
+function onSceneImageLoaded() {
+  imgLoaded = true;
+  canvas.width = imgObj.width;
+  canvas.height = imgObj.height;
+  fitScene();
+}
+
+function fitScene() {
+  if (!imgObj) return;
+  const cw = container.clientWidth, ch = container.clientHeight;
+  const sx = cw / imgObj.width, sy = ch / imgObj.height;
+  minScale = Math.max(sx, sy);
+  scale = minScale;
+  panX = (cw - imgObj.width * scale) / 2;
+  panY = (ch - imgObj.height * scale) / 2;
+  clampPan();
 }
 
 function getVendingCenter() {
@@ -373,6 +1190,9 @@ function getVendingCenter() {
   };
 }
 
+/* ============================================================
+   RENDER LOOP
+   ============================================================ */
 function render() {
   if (!imgLoaded) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -383,14 +1203,19 @@ function render() {
 
 function tick() {
   render();
-  if (!found) {
+  if (gameStarted && !found) {
     const elapsed = ((performance.now() - sceneStart) / 1000).toFixed(1);
     document.getElementById('timer').textContent = elapsed + 's';
   }
+  updateConfetti();
   requestAnimationFrame(tick);
 }
 
+/* ============================================================
+   PAN / ZOOM
+   ============================================================ */
 function clampPan() {
+  if (!imgObj) return;
   const w = imgObj.width * scale, h = imgObj.height * scale;
   const cw = container.clientWidth, ch = container.clientHeight;
   if (w <= cw) panX = (cw - w) / 2;
@@ -403,6 +1228,18 @@ function screenToImage(sx, sy) {
   return { x: (sx - panX) / scale, y: (sy - panY) / scale };
 }
 
+function zoomAt(mx, my, factor) {
+  const oldScale = scale;
+  scale *= factor;
+  scale = Math.max(minScale, Math.min(5, scale));
+  panX = mx - (mx - panX) * (scale / oldScale);
+  panY = my - (my - panY) * (scale / oldScale);
+  clampPan();
+}
+
+/* ============================================================
+   HIT / MISS HANDLING
+   ============================================================ */
 function handleClick(sx, sy) {
   if (found || !imgLoaded) return;
   const pt = screenToImage(sx, sy);
@@ -410,130 +1247,328 @@ function handleClick(sx, sy) {
   const dist = Math.hypot(pt.x - vc.x, pt.y - vc.y);
 
   if (dist <= HIT_RADIUS) {
-    found = true;
-    const elapsed = (performance.now() - sceneStart) / 1000;
-    times.push(elapsed);
-    // pulse circle at machine location
-    const el = document.createElement('div');
-    el.className = 'found-pulse';
-    const screenX = vc.x * scale + panX;
-    const screenY = vc.y * scale + panY;
-    const r = HIT_RADIUS * scale;
-    el.style.left = (screenX - r) + 'px';
-    el.style.top = (screenY - r) + 'px';
-    el.style.width = (r * 2) + 'px';
-    el.style.height = (r * 2) + 'px';
-    container.appendChild(el);
-    setTimeout(() => el.remove(), 1000);
-
-    const banner = document.getElementById('found-banner');
-    banner.classList.add('show');
-    setTimeout(() => {
-      banner.classList.remove('show');
-      if (currentScene < SCENES.length - 1) {
-        loadScene(currentScene + 1);
-      } else {
-        showEnd();
-      }
-    }, 1500);
+    handleFound(vc, sx, sy);
   } else {
-    const el = document.createElement('div');
-    el.className = 'click-feedback';
-    el.style.left = (sx - 15) + 'px';
-    el.style.top = (sy - 15) + 'px';
-    el.style.width = '30px';
-    el.style.height = '30px';
-    el.style.fontSize = '24px';
-    el.style.textAlign = 'center';
-    el.style.lineHeight = '30px';
-    el.style.color = '#ff4444';
-    el.textContent = '✕';
-    container.appendChild(el);
-    setTimeout(() => el.remove(), 600);
+    handleMiss(sx, sy);
   }
 }
 
+function handleFound(vc) {
+  found = true;
+  const elapsed = (performance.now() - sceneStart) / 1000;
+  times.push(elapsed);
+  sfxFind();
+
+  // Screen coordinates of the machine
+  const screenX = vc.x * scale + panX;
+  const screenY = vc.y * scale + panY;
+  const r = HIT_RADIUS * scale;
+
+  // Gold ring pulse
+  for (let i = 0; i < 2; i++) {
+    const ring = document.createElement('div');
+    ring.className = i === 0 ? 'found-ring' : 'found-ring-inner';
+    ring.style.left = (screenX - r) + 'px';
+    ring.style.top = (screenY - r) + 'px';
+    ring.style.width = (r * 2) + 'px';
+    ring.style.height = (r * 2) + 'px';
+    container.appendChild(ring);
+    setTimeout(() => ring.remove(), 1200);
+  }
+
+  // Confetti burst
+  spawnConfetti(screenX, screenY, 100);
+
+  // "FOUND!" banner
+  const banner = document.getElementById('found-banner');
+  banner.classList.add('show');
+
+  // Clear hint
+  const hintVig = document.getElementById('hint-vignette');
+  hintVig.classList.remove('active');
+
+  setTimeout(() => {
+    banner.classList.remove('show');
+    if (currentScene < SCENES.length - 1) {
+      transitionToNextScene();
+    } else {
+      showEnd();
+    }
+  }, 1600);
+}
+
+function handleMiss(sx, sy) {
+  sfxMiss();
+
+  // Ripple
+  const ripple = document.createElement('div');
+  ripple.className = 'miss-ripple';
+  ripple.style.left = (sx - 20) + 'px';
+  ripple.style.top = (sy - 20) + 'px';
+  ripple.style.width = '40px';
+  ripple.style.height = '40px';
+  container.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+
+  // X mark
+  const xMark = document.createElement('div');
+  xMark.className = 'miss-x';
+  xMark.style.left = (sx - 10) + 'px';
+  xMark.style.top = (sy - 10) + 'px';
+  xMark.style.width = '20px';
+  xMark.style.height = '20px';
+  xMark.textContent = '✕';
+  container.appendChild(xMark);
+  setTimeout(() => xMark.remove(), 500);
+}
+
+/* ============================================================
+   SCENE TRANSITIONS — warm crossfade
+   ============================================================ */
+function transitionToNextScene() {
+  sfxTransition();
+  const overlay = document.getElementById('transition-overlay');
+  overlay.classList.add('active');
+
+  setTimeout(() => {
+    loadScene(currentScene + 1);
+    setTimeout(() => {
+      overlay.classList.remove('active');
+    }, 100);
+  }, 500);
+}
+
+/* ============================================================
+   HINT SYSTEM — directional vignette
+   ============================================================ */
+function activateHint() {
+  if (found || !imgLoaded) return;
+  hintCount++;
+  sfxClick();
+
+  const vc = getVendingCenter();
+  const cw = container.clientWidth, ch = container.clientHeight;
+
+  // Pan 30% toward the machine
+  const tx = -(vc.x * scale - cw / 2);
+  const ty = -(vc.y * scale - ch / 2);
+  panX += (tx - panX) * 0.3;
+  panY += (ty - panY) * 0.3;
+  clampPan();
+
+  // Directional vignette — darken away from machine
+  const machineScreenX = vc.x * scale + panX;
+  const machineScreenY = vc.y * scale + panY;
+  const pctX = ((machineScreenX / cw) * 100).toFixed(1);
+  const pctY = ((machineScreenY / ch) * 100).toFixed(1);
+  const strength = Math.min(0.45, 0.15 + hintCount * 0.08);
+
+  const hintVig = document.getElementById('hint-vignette');
+  hintVig.style.background = `radial-gradient(ellipse 60% 50% at ${pctX}% ${pctY}%, transparent 10%, rgba(0,0,0,${strength}) 100%)`;
+  hintVig.classList.add('active');
+
+  // Fade out vignette after 3s
+  setTimeout(() => {
+    hintVig.classList.remove('active');
+  }, 3000);
+}
+
+/* ============================================================
+   END SCREEN
+   ============================================================ */
 function showEnd() {
-  const end = document.getElementById('end-screen');
-  end.style.display = 'flex';
+  sfxCelebrate();
+
+  const endEl = document.getElementById('end-screen');
   const timesDiv = document.getElementById('end-times');
-  timesDiv.innerHTML = times.map((t, i) => `${SCENES[i].name}: ${t.toFixed(1)}s`).join('<br>');
+  const totalDiv = document.getElementById('end-total-val');
+
+  timesDiv.innerHTML = times.map((t, i) => `
+    <div class="end-time-row">
+      <span>${SCENE_EMOJIS[i]} ${SCENES[i].name}</span>
+      <span class="end-time-val">${t.toFixed(1)}s</span>
+    </div>
+  `).join('');
+
   const total = times.reduce((a, b) => a + b, 0);
-  document.getElementById('end-total').textContent = `Total: ${total.toFixed(1)}s`;
+  totalDiv.textContent = total.toFixed(1) + 's';
+
+  // Show with animation
+  endEl.style.display = 'flex';
+  requestAnimationFrame(() => {
+    endEl.classList.add('visible');
+  });
+
+  // Hide game buttons
+  document.getElementById('hint-btn').classList.remove('visible');
+}
+
+function buildShareText() {
+  const total = times.reduce((a, b) => a + b, 0);
+  let text = `🏪 Clay Machine Glow\n⏱️ Total: ${total.toFixed(1)}s\n\n`;
+  times.forEach((t, i) => {
+    text += `${SCENE_EMOJIS[i]} ${SCENES[i].name}: ${t.toFixed(1)}s\n`;
+  });
+  text += `\nPlay → alangertner.github.io/claymachineglow`;
+  return text;
+}
+
+function shareResults() {
+  const text = buildShareText();
+  const confirm = document.getElementById('share-confirm');
+
+  if (navigator.share) {
+    navigator.share({ title: 'Clay Machine Glow', text }).catch(() => {});
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    confirm.textContent = '✓ Copied to clipboard!';
+    confirm.classList.add('show');
+    setTimeout(() => confirm.classList.remove('show'), 2500);
+  }).catch(() => {
+    confirm.textContent = 'Could not copy';
+    confirm.classList.add('show');
+    setTimeout(() => confirm.classList.remove('show'), 2000);
+  });
 }
 
 function restartGame() {
-  document.getElementById('end-screen').style.display = 'none';
+  const endEl = document.getElementById('end-screen');
+  endEl.classList.remove('visible');
+  setTimeout(() => { endEl.style.display = 'none'; }, 500);
+  document.getElementById('hint-btn').classList.add('visible');
+  document.getElementById('share-confirm').classList.remove('show');
   times = [];
   loadScene(0);
 }
 
+/* ============================================================
+   INPUT HANDLING
+   ============================================================ */
 function setupInput() {
   let clickIntent = true;
-  container.addEventListener('mousedown', e => { dragging = true; clickIntent = true; dragStartX = e.clientX; dragStartY = e.clientY; panStartX = panX; panStartY = panY; container.classList.add('dragging'); });
-  window.addEventListener('mousemove', e => { if (!dragging) return; const dx = e.clientX - dragStartX, dy = e.clientY - dragStartY; if (Math.abs(dx) > 5 || Math.abs(dy) > 5) clickIntent = false; panX = panStartX + dx; panY = panStartY + dy; clampPan(); });
-  window.addEventListener('mouseup', e => { if (dragging && clickIntent) handleClick(e.clientX, e.clientY); dragging = false; container.classList.remove('dragging'); });
 
+  // --- Mouse ---
+  container.addEventListener('mousedown', e => {
+    dragging = true; clickIntent = true;
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    panStartX = panX; panStartY = panY;
+    container.classList.add('dragging');
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) clickIntent = false;
+    panX = panStartX + dx;
+    panY = panStartY + dy;
+    clampPan();
+  });
+
+  window.addEventListener('mouseup', e => {
+    if (dragging && clickIntent) handleClick(e.clientX, e.clientY);
+    dragging = false;
+    container.classList.remove('dragging');
+  });
+
+  // --- Wheel zoom ---
   container.addEventListener('wheel', e => {
     e.preventDefault();
-    const oldScale = scale;
-    scale *= e.deltaY < 0 ? 1.1 : 0.9;
-    scale = Math.max(minScale, Math.min(4, scale));
     const rect = container.getBoundingClientRect();
     const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    panX = mx - (mx - panX) * (scale / oldScale);
-    panY = my - (my - panY) * (scale / oldScale);
-    clampPan();
+    zoomAt(mx, my, e.deltaY < 0 ? 1.12 : 0.89);
   }, { passive: false });
 
-  // Touch
-  let touches = [];
+  // --- Touch ---
+  let lastTouches = [];
   container.addEventListener('touchstart', e => {
     e.preventDefault();
-    touches = [...e.touches];
-    if (touches.length === 1) { dragging = true; clickIntent = true; dragStartX = touches[0].clientX; dragStartY = touches[0].clientY; panStartX = panX; panStartY = panY; }
-    if (touches.length === 2) { lastPinchDist = Math.hypot(touches[1].clientX - touches[0].clientX, touches[1].clientY - touches[0].clientY); clickIntent = false; }
+    lastTouches = [...e.touches];
+    if (lastTouches.length === 1) {
+      dragging = true; clickIntent = true;
+      dragStartX = lastTouches[0].clientX;
+      dragStartY = lastTouches[0].clientY;
+      panStartX = panX; panStartY = panY;
+    }
+    if (lastTouches.length === 2) {
+      lastPinchDist = Math.hypot(
+        lastTouches[1].clientX - lastTouches[0].clientX,
+        lastTouches[1].clientY - lastTouches[0].clientY
+      );
+      clickIntent = false;
+    }
   }, { passive: false });
+
   container.addEventListener('touchmove', e => {
     e.preventDefault();
     const ts = [...e.touches];
     if (ts.length === 1 && dragging) {
-      const dx = ts[0].clientX - dragStartX, dy = ts[0].clientY - dragStartY;
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) clickIntent = false;
-      panX = panStartX + dx; panY = panStartY + dy; clampPan();
+      const dx = ts[0].clientX - dragStartX;
+      const dy = ts[0].clientY - dragStartY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) clickIntent = false;
+      panX = panStartX + dx;
+      panY = panStartY + dy;
+      clampPan();
     }
     if (ts.length === 2) {
-      const dist = Math.hypot(ts[1].clientX - ts[0].clientX, ts[1].clientY - ts[0].clientY);
-      const oldScale = scale;
-      scale *= dist / lastPinchDist;
-      scale = Math.max(minScale, Math.min(4, scale));
-      const mx = (ts[0].clientX + ts[1].clientX) / 2, my = (ts[0].clientY + ts[1].clientY) / 2;
-      panX = mx - (mx - panX) * (scale / oldScale);
-      panY = my - (my - panY) * (scale / oldScale);
-      clampPan();
+      const dist = Math.hypot(
+        ts[1].clientX - ts[0].clientX,
+        ts[1].clientY - ts[0].clientY
+      );
+      const mx = (ts[0].clientX + ts[1].clientX) / 2;
+      const my = (ts[0].clientY + ts[1].clientY) / 2;
+      zoomAt(mx, my, dist / lastPinchDist);
       lastPinchDist = dist;
+
+      // Also pan during pinch
+      if (lastTouches.length === 2) {
+        const omx = (lastTouches[0].clientX + lastTouches[1].clientX) / 2;
+        const omy = (lastTouches[0].clientY + lastTouches[1].clientY) / 2;
+        panX += mx - omx;
+        panY += my - omy;
+        clampPan();
+      }
+      lastTouches = ts;
     }
   }, { passive: false });
+
   container.addEventListener('touchend', e => {
-    if (dragging && clickIntent && e.changedTouches.length === 1) handleClick(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    if (dragging && clickIntent && e.changedTouches.length === 1) {
+      handleClick(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    }
     dragging = false;
+    if (e.touches.length === 0) lastTouches = [];
   });
 
-  // Hint - smoothly pan toward the vending machine
-  document.getElementById('hint-btn').addEventListener('click', () => {
-    if (found || !imgLoaded) return;
-    const vc = getVendingCenter();
-    const tx = -(vc.x * scale - container.clientWidth / 2);
-    const ty = -(vc.y * scale - container.clientHeight / 2);
-    panX += (tx - panX) * 0.3;
-    panY += (ty - panY) * 0.3;
-    clampPan();
+  // --- Buttons ---
+  document.getElementById('hint-btn').addEventListener('click', activateHint);
+
+  document.getElementById('sound-btn').addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    document.getElementById('sound-btn').textContent = soundEnabled ? '🔊' : '🔇';
+    document.getElementById('sound-btn').setAttribute('aria-label',
+      soundEnabled ? 'Mute sound' : 'Unmute sound');
+    if (soundEnabled) sfxClick();
   });
+
+  document.getElementById('share-btn').addEventListener('click', shareResults);
+  document.getElementById('replay-btn').addEventListener('click', restartGame);
 }
 
-// ===== TITLE SCREEN =====
+/* ============================================================
+   TITLE SCREEN
+   ============================================================ */
 function initTitle() {
-  // Place yellow circle randomly on page (avoiding center where card is)
+  const titleBg = document.getElementById('title-bg');
+  const titleBgImg = preloadedImages['title-bg.png'];
+  if (titleBgImg) {
+    titleBg.style.backgroundImage = `url(${titleBgImg.src})`;
+  } else {
+    titleBg.style.backgroundImage = `url('title-bg.png')`;
+  }
+
+  // Place yellow circle randomly, avoiding center
   const yc = document.getElementById('title-yellow-circle');
   const margin = 80;
   const W = window.innerWidth, H = window.innerHeight;
@@ -541,25 +1576,93 @@ function initTitle() {
   do {
     x = margin + Math.random() * (W - margin * 2 - 68);
     y = margin + Math.random() * (H - margin * 2 - 68);
-    // Avoid the center card area (roughly middle 50% of screen)
-    const inCenter = x > W * 0.2 && x < W * 0.75 && y > H * 0.15 && y < H * 0.8;
-    if (!inCenter || attempts > 30) break;
+    const inCenter = x > W * 0.18 && x < W * 0.78 && y > H * 0.12 && y < H * 0.82;
+    if (!inCenter || attempts > 40) break;
     attempts++;
   } while (true);
   yc.style.left = x + 'px';
   yc.style.top = y + 'px';
 
+  // Parallax on mouse move (desktop)
+  if (window.matchMedia('(pointer: fine)').matches) {
+    document.addEventListener('mousemove', e => {
+      if (!document.getElementById('title-screen').classList.contains('visible')) return;
+      const rx = (e.clientX / W - 0.5) * 2;
+      const ry = (e.clientY / H - 0.5) * 2;
+      titleBg.style.transform = `translate(${rx * -12}px, ${ry * -8}px)`;
+    });
+  }
+
+  // Start button
   document.getElementById('start-btn').addEventListener('click', () => {
-    document.getElementById('title-screen').style.display = 'none';
-    document.getElementById('title-yellow-circle').style.display = 'none';
-    document.getElementById('hud').style.display = 'flex';
-    document.getElementById('hint-btn').style.display = 'block';
-    init();
+    initAudio();
+    sfxClick();
+    startGame();
   });
 }
 
-window.addEventListener('load', initTitle);
-window.addEventListener('resize', () => { if (imgLoaded) clampPan(); });
+function startGame() {
+  gameStarted = true;
+
+  // Transition from title to game
+  const titleScreen = document.getElementById('title-screen');
+  titleScreen.classList.remove('visible');
+  titleScreen.classList.add('exit');
+  document.getElementById('title-yellow-circle').style.display = 'none';
+
+  setTimeout(() => {
+    titleScreen.style.display = 'none';
+    document.getElementById('hud').classList.add('visible');
+    document.getElementById('game-container').classList.add('visible');
+    document.getElementById('hint-btn').classList.add('visible');
+    document.getElementById('sound-btn').classList.add('visible');
+    initGame();
+  }, 500);
+}
+
+/* ============================================================
+   GAME INIT
+   ============================================================ */
+function initGame() {
+  canvas = document.getElementById('scene-canvas');
+  ctx = canvas.getContext('2d');
+  container = document.getElementById('game-container');
+  confettiCanvas = document.getElementById('confetti-canvas');
+  confettiCtx = confettiCanvas.getContext('2d');
+
+  resizeConfettiCanvas();
+  setupInput();
+  loadScene(0);
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   RESIZE HANDLER (debounced)
+   ============================================================ */
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (imgLoaded) {
+      fitScene();
+    }
+    if (confettiCanvas) resizeConfettiCanvas();
+  }, 100);
+});
+
+/* ============================================================
+   STARTUP
+   ============================================================ */
+window.addEventListener('load', async () => {
+  await preloadInitial();
+
+  // Hide loading, show title
+  document.getElementById('loading-screen').classList.add('hidden');
+  const titleScreen = document.getElementById('title-screen');
+  titleScreen.classList.add('visible');
+
+  initTitle();
+});
 </script>
 </body>
 </html>
