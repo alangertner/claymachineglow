@@ -314,8 +314,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; f
 // Vending machine coordinates baked into the DALL-E generated images
 // vendingX/vendingY = center of vending machine as fraction of image dimensions
 const SCENES = [
-  { img: 'scenes/scene1.png?v=5',  name: 'Kensington Market',      vendingX: 0.375, vendingY: 0.420 },
-  { img: 'scenes/scene2.png?v=5',  name: 'Nathan Phillips Square', vendingX: 0.330, vendingY: 0.380 },
+  { img: 'scenes/scene1.png?v=6',  name: 'Kensington Market',      vendingX: 0.370, vendingY: 0.420 },
+  { img: 'scenes/scene2.png?v=6',  name: 'Nathan Phillips Square', vendingX: 0.300, vendingY: 0.420 },
   { img: 'scenes/scene3.png?v=5',  name: 'Dundas Square',          vendingX: 0.300, vendingY: 0.550 },
   { img: 'scenes/scene4.png?v=5',  name: 'St. Lawrence Market',    vendingX: 0.350, vendingY: 0.520 },
   { img: 'scenes/scene5.png?v=5',  name: 'High Park',              vendingX: 0.470, vendingY: 0.480 },
@@ -326,7 +326,7 @@ const SCENES = [
   { img: 'scenes/scene10.png?v=5', name: 'Gardiner Museum',        vendingX: 0.420, vendingY: 0.350 },
 ];
 
-const HIT_RADIUS = 55; // generous hitbox radius in image pixels
+const HIT_RADIUS = 70; // generous hitbox radius in image pixels
 let currentScene = 0, times = [], sceneStart = 0;
 let canvas, ctx, container;
 let imgObj = null, imgLoaded = false;
