@@ -1007,7 +1007,20 @@ const SCENES = [
   { img: 'scenes/scene10.png', name: 'Gardiner Museum',        vendingX: 0.420, vendingY: 0.350 },
 ];
 
-const HIT_RADIUS = 120;
+// Progressive difficulty: hit radius shrinks, starting zoom increases per scene
+const BASE_HIT_RADIUS = 140;
+function getHitRadius(sceneIdx) {
+  // Scene 0: 140px (very forgiving) → Scene 9: 60px (tight)
+  return BASE_HIT_RADIUS - (sceneIdx * 9);
+}
+function getStartZoom(sceneIdx) {
+  // Scene 0: 1.0x minScale → Scene 9: 1.8x minScale (zoomed in, less overview)
+  return 1.0 + (sceneIdx * 0.09);
+}
+function getHintAccuracy(sceneIdx) {
+  // Scene 0: pan 70% toward machine → Scene 9: pan 25% (vaguer hint)
+  return 0.70 - (sceneIdx * 0.05);
+}
 
 // ===== STATE =====
 let currentScene = 0;
@@ -1338,12 +1351,19 @@ async function loadScene(idx, showInterstitial = false) {
     const sx = container.clientWidth / imgWidth;
     const sy = container.clientHeight / imgHeight;
     minScale = Math.max(sx, sy);
-    scale = minScale;
+    scale = minScale * getStartZoom(idx);
     targetScale = scale;
     
-    // Center image
-    panX = (container.clientWidth - imgWidth * scale) / 2;
-    panY = (container.clientHeight - imgHeight * scale) / 2;
+    // On later scenes, start at a random offset (not centered) to disorient
+    if (idx > 2) {
+      const offsetX = (Math.random() - 0.5) * imgWidth * 0.3;
+      const offsetY = (Math.random() - 0.5) * imgHeight * 0.3;
+      panX = (container.clientWidth - imgWidth * scale) / 2 + offsetX;
+      panY = (container.clientHeight - imgHeight * scale) / 2 + offsetY;
+    } else {
+      panX = (container.clientWidth - imgWidth * scale) / 2;
+      panY = (container.clientHeight - imgHeight * scale) / 2;
+    }
     targetPanX = panX;
     targetPanY = panY;
     
@@ -1487,7 +1507,7 @@ function handleClick(sx, sy) {
   const vc = getVendingCenter();
   const dist = Math.hypot(pt.x - vc.x, pt.y - vc.y);
   
-  if (dist <= HIT_RADIUS) {
+  if (dist <= getHitRadius(currentScene)) {
     handleFound(vc, sx, sy);
   } else {
     handleMiss(sx, sy);
@@ -1603,7 +1623,7 @@ function createPulseRings(x, y) {
   for (let i = 0; i < 3; i++) {
     const ring = document.createElement('div');
     ring.className = 'found-pulse';
-    const r = HIT_RADIUS * scale;
+    const r = getHitRadius(currentScene) * scale;
     ring.style.left = (x - r) + 'px';
     ring.style.top = (y - r) + 'px';
     ring.style.width = (r * 2) + 'px';
@@ -1722,11 +1742,16 @@ function animateHint() {
   const cw = container.clientWidth;
   const ch = container.clientHeight;
   
-  // Target position (center machine on screen, with some offset to keep challenge)
-  const offsetX = (Math.random() - 0.5) * 200;
-  const offsetY = (Math.random() - 0.5) * 200;
-  const finalPanX = -(vc.x * scale - cw / 2) + offsetX;
-  const finalPanY = -(vc.y * scale - ch / 2) + offsetY;
+  // Progressive hint: early scenes pan close, later scenes give vaguer direction
+  const accuracy = getHintAccuracy(currentScene);
+  const maxOffset = 100 + (currentScene * 40); // 100px on scene 1, 460px on scene 10
+  const offsetX = (Math.random() - 0.5) * maxOffset;
+  const offsetY = (Math.random() - 0.5) * maxOffset;
+  const targetX = -(vc.x * scale - cw / 2) + offsetX;
+  const targetY = -(vc.y * scale - ch / 2) + offsetY;
+  // Only pan partway toward target on later scenes
+  const finalPanX = panX + (targetX - panX) * accuracy;
+  const finalPanY = panY + (targetY - panY) * accuracy;
   
   const startPanX = panX;
   const startPanY = panY;
