@@ -1007,13 +1007,7 @@ const SCENES = [
   { img: 'scenes/scene10.png', name: 'Gardiner Museum',        vendingX: 0.420, vendingY: 0.350 },
 ];
 
-// Progressive difficulty layered on top of scene design
-const HIT_RADIUS_START = 130;
-const HIT_RADIUS_END = 70;
-function getHitRadius(sceneIdx) {
-  const t = sceneIdx / 9;
-  return HIT_RADIUS_START + (HIT_RADIUS_END - HIT_RADIUS_START) * t;
-}
+const HIT_RADIUS = 120;
 
 // ===== STATE =====
 let currentScene = 0;
@@ -1493,7 +1487,7 @@ function handleClick(sx, sy) {
   const vc = getVendingCenter();
   const dist = Math.hypot(pt.x - vc.x, pt.y - vc.y);
   
-  if (dist <= getHitRadius(currentScene)) {
+  if (dist <= HIT_RADIUS) {
     handleFound(vc, sx, sy);
   } else {
     handleMiss(sx, sy);
@@ -1609,7 +1603,7 @@ function createPulseRings(x, y) {
   for (let i = 0; i < 3; i++) {
     const ring = document.createElement('div');
     ring.className = 'found-pulse';
-    const r = getHitRadius(currentScene) * scale;
+    const r = HIT_RADIUS * scale;
     ring.style.left = (x - r) + 'px';
     ring.style.top = (y - r) + 'px';
     ring.style.width = (r * 2) + 'px';
