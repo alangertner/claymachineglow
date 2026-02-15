@@ -1007,7 +1007,13 @@ const SCENES = [
   { img: 'scenes/scene10.png', name: 'Gardiner Museum',        vendingX: 0.420, vendingY: 0.350 },
 ];
 
-const HIT_RADIUS = 120;
+// Progressive difficulty layered on top of scene design
+const HIT_RADIUS_START = 130;
+const HIT_RADIUS_END = 70;
+function getHitRadius(sceneIdx) {
+  const t = sceneIdx / 9;
+  return HIT_RADIUS_START + (HIT_RADIUS_END - HIT_RADIUS_START) * t;
+}
 
 // ===== STATE =====
 let currentScene = 0;
@@ -1487,7 +1493,7 @@ function handleClick(sx, sy) {
   const vc = getVendingCenter();
   const dist = Math.hypot(pt.x - vc.x, pt.y - vc.y);
   
-  if (dist <= HIT_RADIUS) {
+  if (dist <= getHitRadius(currentScene)) {
     handleFound(vc, sx, sy);
   } else {
     handleMiss(sx, sy);
@@ -1603,7 +1609,7 @@ function createPulseRings(x, y) {
   for (let i = 0; i < 3; i++) {
     const ring = document.createElement('div');
     ring.className = 'found-pulse';
-    const r = HIT_RADIUS * scale;
+    const r = getHitRadius(currentScene) * scale;
     ring.style.left = (x - r) + 'px';
     ring.style.top = (y - r) + 'px';
     ring.style.width = (r * 2) + 'px';
@@ -1722,11 +1728,15 @@ function animateHint() {
   const cw = container.clientWidth;
   const ch = container.clientHeight;
   
-  // Target position (center machine on screen, with some offset to keep challenge)
-  const offsetX = (Math.random() - 0.5) * 200;
-  const offsetY = (Math.random() - 0.5) * 200;
-  const finalPanX = -(vc.x * scale - cw / 2) + offsetX;
-  const finalPanY = -(vc.y * scale - ch / 2) + offsetY;
+  // Hints get vaguer on later scenes
+  const hintSpread = 100 + (currentScene * 35);
+  const hintAccuracy = 1.0 - (currentScene * 0.06); // 100% → 46%
+  const offsetX = (Math.random() - 0.5) * hintSpread;
+  const offsetY = (Math.random() - 0.5) * hintSpread;
+  const targetX = -(vc.x * scale - cw / 2) + offsetX;
+  const targetY = -(vc.y * scale - ch / 2) + offsetY;
+  const finalPanX = panX + (targetX - panX) * hintAccuracy;
+  const finalPanY = panY + (targetY - panY) * hintAccuracy;
   
   const startPanX = panX;
   const startPanY = panY;
