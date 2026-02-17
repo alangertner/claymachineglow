@@ -1061,24 +1061,67 @@ function initAudio() {
   updateMuteButton();
 }
 
-function startAmbient() {
-  if (!audioCtx || bgMusic) return;
-  
-  // Background music: Starpainters by Gord Downie (20s loop)
-  bgMusic = new Audio('starpainters-loop.mp3');
-  bgMusic.loop = true;
-  bgMusic.volume = isMuted ? 0 : 0.3;
-  bgMusic.play().catch(() => {});
+// Seamless loop: decode buffer, schedule overlapping copies with crossfade
+let musicBuffer = null;
+let musicGain = null;
+let musicSources = [];
+let musicLoopTimer = null;
+const XFADE = 2;  // crossfade duration in seconds
+let musicClipLen = 20;
+
+async function startAmbient() {
+  if (!audioCtx || musicBuffer) return;
+  try {
+    const resp = await fetch('starpainters-loop.mp3');
+    const arr = await resp.arrayBuffer();
+    musicBuffer = await audioCtx.decodeAudioData(arr);
+    musicClipLen = musicBuffer.duration;
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = isMuted ? 0 : 0.3;
+    musicGain.connect(audioCtx.destination);
+    scheduleLoop();
+  } catch(e) { console.warn('Music load failed', e); }
+}
+
+function scheduleLoop() {
+  if (!musicBuffer || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  playMusicCopy(now);
+  // Schedule next copy to start XFADE seconds before current ends, repeating
+  musicLoopTimer = setInterval(() => {
+    if (!musicBuffer) return;
+    playMusicCopy(audioCtx.currentTime);
+  }, (musicClipLen - XFADE) * 1000);
+}
+
+function playMusicCopy(startTime) {
+  const src = audioCtx.createBufferSource();
+  const gain = audioCtx.createGain();
+  src.buffer = musicBuffer;
+  src.connect(gain);
+  gain.connect(musicGain);
+  // Fade in over XFADE
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(1, startTime + XFADE);
+  // Fade out over XFADE at end
+  const fadeOutStart = startTime + musicClipLen - XFADE;
+  gain.gain.setValueAtTime(1, fadeOutStart);
+  gain.gain.linearRampToValueAtTime(0, fadeOutStart + XFADE);
+  src.start(startTime);
+  src.stop(startTime + musicClipLen);
+  musicSources.push(src);
+  // Cleanup old sources
+  src.onended = () => {
+    const idx = musicSources.indexOf(src);
+    if (idx > -1) musicSources.splice(idx, 1);
+  };
 }
 
 function stopAmbient() {
-  if (bgMusic) {
-    const m = bgMusic;
-    const fadeOut = setInterval(() => {
-      if (m.volume > 0.02) { m.volume = Math.max(0, m.volume - 0.02); }
-      else { clearInterval(fadeOut); m.pause(); }
-    }, 30);
-  }
+  if (musicLoopTimer) { clearInterval(musicLoopTimer); musicLoopTimer = null; }
+  musicSources.forEach(s => { try { s.stop(); } catch(e){} });
+  musicSources = [];
+  musicBuffer = null;
 }
 
 function playFoundSound() {
@@ -1214,8 +1257,8 @@ function updateMuteButton() {
   if (muteBtn) {
     muteBtn.textContent = isMuted ? '🔇' : '🔊';
   }
-  if (bgMusic) {
-    bgMusic.volume = isMuted ? 0 : 0.3;
+  if (musicGain) {
+    musicGain.gain.value = isMuted ? 0 : 0.3;
   }
 }
 
