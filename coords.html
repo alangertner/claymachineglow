@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html><head><style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #111; color: #fff; font-family: monospace; }
+#bar { position: fixed; top: 0; left: 0; right: 0; background: #222; padding: 10px 20px; z-index: 100; display: flex; gap: 20px; align-items: center; }
+#bar button { background: #444; color: #fff; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; }
+#bar button:hover { background: #666; }
+#bar button.active { background: #c00; }
+#coords { color: lime; font-size: 16px; }
+#output { color: yellow; font-size: 14px; flex: 1; }
+#wrap { margin-top: 50px; position: relative; cursor: crosshair; }
+#wrap img { width: 100%; display: block; }
+.marker { position: absolute; width: 20px; height: 20px; border: 3px solid red; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 10px red; }
+</style></head>
+<body>
+<div id="bar">
+  <span>Scene:</span>
+  <div id="buttons"></div>
+  <span id="coords">Click on the machine</span>
+  <span id="output"></span>
+  <button onclick="copyAll()">Copy All</button>
+</div>
+<div id="wrap">
+  <img id="img">
+</div>
+<script>
+const scenes = [
+  'scene1.png','scene2.png','scene3.png','scene4.png','scene5.png',
+  'scene6.png','scene7.png','scene8.png','scene9.png','scene10.png'
+];
+const results = {};
+let current = 0;
+
+const btnDiv = document.getElementById('buttons');
+scenes.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.textContent = i + 1;
+  b.onclick = () => loadScene(i);
+  btnDiv.appendChild(b);
+});
+
+function loadScene(i) {
+  current = i;
+  document.getElementById('img').src = 'scenes/' + scenes[i];
+  document.querySelectorAll('#buttons button').forEach((b, j) => b.className = j === i ? 'active' : '');
+  document.querySelectorAll('.marker').forEach(m => m.remove());
+  if (results[i]) showMarker(results[i].x, results[i].y);
+  updateOutput();
+}
+
+document.getElementById('wrap').addEventListener('click', (e) => {
+  const img = document.getElementById('img');
+  const rect = img.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+  results[current] = { x: +x.toFixed(3), y: +y.toFixed(3) };
+  document.getElementById('coords').textContent = `Scene ${current+1}: (${x.toFixed(3)}, ${y.toFixed(3)})`;
+  document.querySelectorAll('.marker').forEach(m => m.remove());
+  showMarker(x, y);
+  updateOutput();
+});
+
+function showMarker(x, y) {
+  const img = document.getElementById('img');
+  const m = document.createElement('div');
+  m.className = 'marker';
+  m.style.left = (x * 100) + '%';
+  m.style.top = (y * 100) + '%';
+  document.getElementById('wrap').appendChild(m);
+}
+
+function updateOutput() {
+  const parts = [];
+  for (let i = 0; i < 10; i++) {
+    if (results[i]) {
+      parts.push(`scene${i+1}: (${results[i].x}, ${results[i].y})`);
+    }
+  }
+  document.getElementById('output').textContent = parts.join(' | ');
+}
+
+function copyAll() {
+  const lines = [];
+  for (let i = 0; i < 10; i++) {
+    if (results[i]) {
+      lines.push(`vendingX: ${results[i].x}, vendingY: ${results[i].y}`);
+    } else {
+      lines.push(`scene${i+1}: NOT SET`);
+    }
+  }
+  navigator.clipboard.writeText(lines.join('\n'));
+  alert('Copied!');
+}
+
+loadScene(0);
+</script>
+</body>
+</html>
