@@ -1796,10 +1796,8 @@ function animateHint() {
   const imgWidth = imgEl.naturalWidth;
   const imgHeight = imgEl.naturalHeight;
   
-  // Offset gets bigger on later scenes (less precise)
-  const spread = 0.05 + (currentScene * 0.02);
-  const cx = (s.vendingX + (Math.random() - 0.5) * spread) * imgWidth;
-  const cy = (s.vendingY + (Math.random() - 0.5) * spread) * imgHeight;
+  const cx = s.vendingX * imgWidth;
+  const cy = s.vendingY * imgHeight;
   
   // Circle radius: big enough to be directional, not exact
   const radius = 120 + (currentScene * 22); // 120px scene1 → 340px scene10
