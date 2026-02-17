@@ -512,7 +512,13 @@ html, body {
   transform: scale(0.95);
 }
 
-/* tooltip removed — was rendering over scene */
+/* Hint circle pulse animation */
+@keyframes hintPulse {
+  0% { transform: scale(0.5); opacity: 0; }
+  20% { transform: scale(1); opacity: 1; }
+  80% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1.1); opacity: 0; }
+}
 
 /* ===== MUTE BUTTON ===== */
 #mute-btn {
@@ -1778,52 +1784,43 @@ function restartGame() {
 }
 
 // ===== HINT SYSTEM =====
-let hintAnimation = null;
+let hintCircle = null;
 
 function animateHint() {
   if (found || !imgLoaded) return;
   
-  const vc = getVendingCenter();
-  const cw = container.clientWidth;
-  const ch = container.clientHeight;
+  // Remove previous hint circle
+  if (hintCircle) { hintCircle.remove(); hintCircle = null; }
   
-  // Hints get vaguer on later scenes
-  const hintSpread = 100 + (currentScene * 35);
-  const hintAccuracy = 1.0 - (currentScene * 0.06); // 100% → 46%
-  const offsetX = (Math.random() - 0.5) * hintSpread;
-  const offsetY = (Math.random() - 0.5) * hintSpread;
-  const targetX = -(vc.x * scale - cw / 2) + offsetX;
-  const targetY = -(vc.y * scale - ch / 2) + offsetY;
-  const finalPanX = panX + (targetX - panX) * hintAccuracy;
-  const finalPanY = panY + (targetY - panY) * hintAccuracy;
+  const s = SCENES[currentScene];
+  const imgWidth = imgEl.naturalWidth;
+  const imgHeight = imgEl.naturalHeight;
   
-  const startPanX = panX;
-  const startPanY = panY;
-  const startTime = performance.now();
-  const duration = 800;
+  // Offset gets bigger on later scenes (less precise)
+  const spread = 0.05 + (currentScene * 0.02);
+  const cx = (s.vendingX + (Math.random() - 0.5) * spread) * imgWidth;
+  const cy = (s.vendingY + (Math.random() - 0.5) * spread) * imgHeight;
   
-  function animate() {
-    const elapsed = performance.now() - startTime;
-    const t = Math.min(elapsed / duration, 1);
-    
-    // Ease out cubic
-    const ease = 1 - Math.pow(1 - t, 3);
-    
-    panX = startPanX + (finalPanX - startPanX) * ease;
-    panY = startPanY + (finalPanY - startPanY) * ease;
-    targetPanX = panX;
-    targetPanY = panY;
-    
-    clampPan();
-    updateTransform();
-    
-    if (t < 1) {
-      hintAnimation = requestAnimationFrame(animate);
-    }
-  }
+  // Circle radius: big enough to be directional, not exact
+  const radius = 80 + (currentScene * 15); // 80px scene1 → 215px scene10
   
-  if (hintAnimation) cancelAnimationFrame(hintAnimation);
-  hintAnimation = requestAnimationFrame(animate);
+  hintCircle = document.createElement('div');
+  hintCircle.style.cssText = `
+    position: absolute;
+    left: ${cx - radius}px;
+    top: ${cy - radius}px;
+    width: ${radius * 2}px;
+    height: ${radius * 2}px;
+    border: 4px solid rgba(255, 215, 0, 0.8);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 50;
+    animation: hintPulse 2s ease-out forwards;
+  `;
+  imgEl.parentElement.appendChild(hintCircle);
+  
+  // Remove after animation
+  setTimeout(() => { if (hintCircle) { hintCircle.remove(); hintCircle = null; } }, 3000);
 }
 
 // ===== INPUT HANDLING =====
