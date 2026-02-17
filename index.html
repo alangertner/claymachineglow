@@ -1377,7 +1377,7 @@ function updateTransform() {
     if (!dbg) {
       dbg = document.createElement('div');
       dbg.id = 'debug-circle';
-      dbg.style.cssText = 'position:absolute;border:3px solid red;border-radius:50%;pointer-events:none;z-index:999;box-shadow:0 0 10px red;';
+      dbg.style.cssText = 'position:absolute;border:4px solid red;border-radius:50%;pointer-events:none;z-index:9999;box-shadow:0 0 20px red, 0 0 40px red;background:rgba(255,0,0,0.15);';
       container.appendChild(dbg);
     }
     const vc = getVendingCenter();
@@ -1504,6 +1504,18 @@ function handleClick(sx, sy) {
   const pt = screenToImage(sx, sy);
   const vc = getVendingCenter();
   const dist = Math.hypot(pt.x - vc.x, pt.y - vc.y);
+  
+  if (DEBUG) {
+    const pctX = (pt.x / imgWidth).toFixed(3);
+    const pctY = (pt.y / imgHeight).toFixed(3);
+    console.log(`Click: (${pctX}, ${pctY}) | Target: (${SCENES[currentScene].vendingX}, ${SCENES[currentScene].vendingY}) | Dist: ${dist.toFixed(0)} | Radius: ${HIT_RADIUS}`);
+    
+    // Show click marker
+    let marker = document.createElement('div');
+    marker.style.cssText = `position:absolute;left:${sx-5}px;top:${sy-5}px;width:10px;height:10px;background:yellow;border-radius:50%;pointer-events:none;z-index:1000;`;
+    container.appendChild(marker);
+    setTimeout(() => marker.remove(), 3000);
+  }
   
   if (dist <= HIT_RADIUS) {
     handleFound(vc, sx, sy);
