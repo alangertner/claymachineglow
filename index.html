@@ -1377,15 +1377,29 @@ function updateTransform() {
     if (!dbg) {
       dbg = document.createElement('div');
       dbg.id = 'debug-circle';
-      dbg.style.cssText = 'position:absolute;border:4px solid red;border-radius:50%;pointer-events:none;z-index:9999;box-shadow:0 0 20px red, 0 0 40px red;background:rgba(255,0,0,0.15);';
-      container.appendChild(dbg);
+      dbg.style.cssText = 'position:fixed;border:4px solid red;border-radius:50%;pointer-events:none;z-index:99999;box-shadow:0 0 20px red, 0 0 40px red;background:rgba(255,0,0,0.2);';
+      document.body.appendChild(dbg);
     }
     const vc = getVendingCenter();
+    const screenX = panX + vc.x * scale;
+    const screenY = panY + vc.y * scale;
     const r = HIT_RADIUS * scale;
-    dbg.style.left = (panX + vc.x * scale - r) + 'px';
-    dbg.style.top = (panY + vc.y * scale - r) + 'px';
+    dbg.style.left = (screenX - r) + 'px';
+    dbg.style.top = (screenY - r) + 'px';
     dbg.style.width = (r * 2) + 'px';
     dbg.style.height = (r * 2) + 'px';
+    dbg.style.display = 'block';
+    
+    // Also show coords overlay
+    let info = document.getElementById('debug-info');
+    if (!info) {
+      info = document.createElement('div');
+      info.id = 'debug-info';
+      info.style.cssText = 'position:fixed;top:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:lime;font:14px monospace;padding:8px 16px;z-index:99999;border-radius:4px;';
+      document.body.appendChild(info);
+    }
+    const s = SCENES[currentScene];
+    info.textContent = `Target: (${s.vendingX}, ${s.vendingY}) | Screen: (${screenX.toFixed(0)}, ${screenY.toFixed(0)}) | Scale: ${scale.toFixed(2)}`;
   }
 }
 
