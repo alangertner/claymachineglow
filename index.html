@@ -1052,6 +1052,7 @@ let audioCtx = null;
 let isMuted = false;
 let ambientOsc = null;
 let ambientGain = null;
+let bgMusic = null;
 
 function initAudio() {
   if (audioCtx) return;
@@ -1061,42 +1062,22 @@ function initAudio() {
 }
 
 function startAmbient() {
-  if (!audioCtx || ambientOsc) return;
+  if (!audioCtx || bgMusic) return;
   
-  // Very subtle low drone
-  ambientOsc = audioCtx.createOscillator();
-  ambientGain = audioCtx.createGain();
-  const filter = audioCtx.createBiquadFilter();
-  
-  ambientOsc.type = 'sine';
-  ambientOsc.frequency.value = 65;
-  filter.type = 'lowpass';
-  filter.frequency.value = 100;
-  
-  ambientGain.gain.value = 0;
-  
-  ambientOsc.connect(filter);
-  filter.connect(ambientGain);
-  ambientGain.connect(audioCtx.destination);
-  
-  ambientOsc.start();
-  
-  // Fade in
-  if (!isMuted) {
-    ambientGain.gain.linearRampToValueAtTime(0.025, audioCtx.currentTime + 1);
-  }
+  // Background music: Starpainters by Gord Downie (20s loop)
+  bgMusic = new Audio('starpainters-loop.mp3');
+  bgMusic.loop = true;
+  bgMusic.volume = isMuted ? 0 : 0.3;
+  bgMusic.play().catch(() => {});
 }
 
 function stopAmbient() {
-  if (ambientGain && audioCtx) {
-    ambientGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-    setTimeout(() => {
-      if (ambientOsc) {
-        ambientOsc.stop();
-        ambientOsc = null;
-        ambientGain = null;
-      }
-    }, 600);
+  if (bgMusic) {
+    const m = bgMusic;
+    const fadeOut = setInterval(() => {
+      if (m.volume > 0.02) { m.volume = Math.max(0, m.volume - 0.02); }
+      else { clearInterval(fadeOut); m.pause(); }
+    }, 30);
   }
 }
 
@@ -1233,8 +1214,8 @@ function updateMuteButton() {
   if (muteBtn) {
     muteBtn.textContent = isMuted ? '🔇' : '🔊';
   }
-  if (ambientGain && audioCtx) {
-    ambientGain.gain.linearRampToValueAtTime(isMuted ? 0 : 0.025, audioCtx.currentTime + 0.3);
+  if (bgMusic) {
+    bgMusic.volume = isMuted ? 0 : 0.3;
   }
 }
 
