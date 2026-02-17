@@ -1368,9 +1368,27 @@ async function loadScene(idx, showInterstitial = false) {
 }
 
 // ===== TRANSFORM & RENDERING =====
+const DEBUG = new URLSearchParams(window.location.search).has('debug');
+
 function updateTransform() {
   if (!imgEl) return;
   imgEl.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  
+  if (DEBUG && imgLoaded && !found) {
+    let dbg = document.getElementById('debug-circle');
+    if (!dbg) {
+      dbg = document.createElement('div');
+      dbg.id = 'debug-circle';
+      dbg.style.cssText = 'position:absolute;border:3px solid red;border-radius:50%;pointer-events:none;z-index:999;box-shadow:0 0 10px red;';
+      container.appendChild(dbg);
+    }
+    const vc = getVendingCenter();
+    const r = HIT_RADIUS * scale;
+    dbg.style.left = (panX + vc.x * scale - r) + 'px';
+    dbg.style.top = (panY + vc.y * scale - r) + 'px';
+    dbg.style.width = (r * 2) + 'px';
+    dbg.style.height = (r * 2) + 'px';
+  }
 }
 
 function clampPan() {
